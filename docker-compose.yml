@@ -1,0 +1,96 @@
+# Tienda virtual (PHP + MySQL) en contenedores.
+# Levantar todo:  docker compose up -d --build
+
+name: tienda
+
+services:
+  # ---------- Frontend: nginx ----------
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    image: tienda-web:1.0
+    container_name: tienda_web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:8080"        # único servicio de la tienda publicado al host
+    volumes:
+      - uploads:/var/www/html/uploaded_img:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend_net
+
+  # ---------- Backend: PHP-FPM ----------
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    image: tienda-app:1.0
+    container_name: tienda_app
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:?Falta DB_NAME en .env}
+      DB_USER: ${DB_USER:?Falta DB_USER en .env}
+      DB_PASS: ${DB_PASS:?Falta DB_PASS en .env}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+    volumes:
+      - uploads:/var/www/html/uploaded_img
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - frontend_net
+      - backend_net
+
+  # ---------- Base de datos: MySQL ----------
+  db:
+    image: mysql:8.0
+    container_name: tienda_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Falta MYSQL_ROOT_PASSWORD en .env}
+      MYSQL_DATABASE: ${DB_NAME:?Falta DB_NAME en .env}
+      MYSQL_USER: ${DB_USER:?Falta DB_USER en .env}
+      MYSQL_PASSWORD: ${DB_PASS:?Falta DB_PASS en .env}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_general_ci"]
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d:ro   # se ejecuta solo si db_data está vacío
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - backend_net                      # sin puertos publicados: no es accesible desde fuera
+
+  # ---------- Administración de la BD: phpMyAdmin (solo desarrollo) ----------
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    container_name: tienda_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+    ports:
+      - "127.0.0.1:${PMA_PORT:-8081}:80"   # solo accesible desde tu propio equipo
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend_net
+      - frontend_net                     # solo para poder publicar el puerto en el host
+
+networks:
+  frontend_net:        # web <-> app
+    driver: bridge
+  backend_net:         # app <-> db (sin salida a Internet)
+    driver: bridge
+    internal: true
+
+volumes:
+  db_data:             # datos de MySQL
+  uploads:             # imágenes de productos
