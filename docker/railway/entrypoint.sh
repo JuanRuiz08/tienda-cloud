@@ -18,6 +18,9 @@ chown -R www-data:www-data "$UP" /tmp/nginx
 php /usr/local/bin/init-db.php || echo "[entrypoint] aviso: la inicialización de la base falló"
 
 # Railway asigna el puerto por la variable PORT.
+# Un reinicio reutiliza el disco del contenedor: el archivo de la ejecución anterior (de www-data) sigue en /tmp,
+# y en un directorio con sticky bit root no puede sobrescribirlo (fs.protected_regular). Se borra antes de crearlo.
+rm -f /tmp/nginx.conf
 sed "s/__PORT__/$PORT/g" /etc/nginx/nginx.conf.template > /tmp/nginx.conf
 chown www-data:www-data /tmp/nginx.conf
 
