@@ -7,7 +7,7 @@ function tarjeta_producto(array $producto): void
     $stock = (int) $producto['stock'];
     $estado_stock = $stock === 0 ? ' agotado' : ($stock <= 3 ? ' bajo' : '');
     ?>
-   <form action="" method="post" class="caja">
+   <form action="" method="post" class="caja" id="producto-<?= (int) $producto['id'] ?>">
       <div class="media"><img class="image" src="uploaded_img/<?= e($producto['image']) ?>" alt="<?= e($producto['name']) ?>" loading="lazy"></div>
       <div class="info">
          <div class="name"><?= e($producto['name']) ?></div>
@@ -41,10 +41,13 @@ function render_productos(array $productos, string $vacio): void
  * Procesa el formulario "añadir al carrito" y devuelve el aviso a mostrar (o null si no se envió).
  * El precio y la imagen se leen de la base de datos, no del formulario, para que no se puedan alterar.
  */
-function procesar_agregar_al_carrito(mysqli $conn, int $user_id): ?string
+function procesar_agregar_al_carrito(mysqli $conn, ?int $user_id): ?string
 {
     if (!isset($_POST['add_to_cart'])) {
         return null;
+    }
+    if ($user_id === null) {
+        redirigir('login.php?requiere=1'); // los invitados ven el catálogo, pero comprar exige cuenta
     }
 
     $nombre = (string) ($_POST['product_name'] ?? '');

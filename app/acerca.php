@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/app.php';
 
-requerir_usuario();
+usuario_actual(); // abre la sesión antes de imprimir nada (la cabecera muestra al usuario)
 
 render_head('Acerca de');
 include 'header.php';

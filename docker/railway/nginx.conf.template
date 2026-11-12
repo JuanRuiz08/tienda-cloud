@@ -32,7 +32,7 @@ http {
 
         location = /healthz { access_log off; return 200 "ok\n"; }
 
-        location = / { return 302 /login.php; }
+        location = / { return 302 /inicio.php; }
 
         # Código compartido (no es una página): no debe poder ejecutarse por URL.
         location ^~ /includes/ { return 404; }

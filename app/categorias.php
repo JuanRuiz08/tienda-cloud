@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/app.php';
 
-$user_id = requerir_usuario();
+$user_id = usuario_actual(); // null = invitado (puede navegar, no comprar)
 
 if ($aviso = procesar_agregar_al_carrito($conn, $user_id)) {
    $message[] = $aviso;

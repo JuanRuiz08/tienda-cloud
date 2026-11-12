@@ -4,6 +4,10 @@ require_once __DIR__ . '/includes/autenticacion.php';
 
 iniciar_sesion();
 
+if (isset($_GET['requiere'])) {
+   $message[] = 'Inicia sesión o regístrate para continuar.';
+}
+
 if (isset($_POST['submit'])) {
    $email = trim($_POST['email']);
    $usuario = autenticar($conn, $email, $_POST['password']);

@@ -11,10 +11,14 @@
 
         <div class="caja">
             <h3>Enlaces adicionales</h3>
+            <?php if (usuario_actual()): ?>
+            <a href="carrito.php">Carrito</a>
+            <a href="pedidos.php">Pedidos</a>
+            <a href="cerrar_sesion.php">Cerrar sesión</a>
+            <?php else: ?>
             <a href="login.php">Iniciar sesión</a>
             <a href="registro.php">Registrarse</a>
-            <a href="carrito.php">Carrito</a>
-            <a href="pedidos.php">pedidos</a>
+            <?php endif; ?>
         </div>
 
         <div class="caja"> 
@@ -32,7 +36,6 @@
             
         </div>
     </div>
-    <!-- Las clases se llaman acss -->
-    <p class="credit">Creado por <span>Juan David Ruiz Orozco-Yarlinson Mosquera-Diego Carmona</span>  <?php echo date('Y'); ?> </p>
+    <p class="credit">Creado por <span>Diego Andres Carmona</span> · <span>Juan David Ruiz Orozco</span> · <span>Yarlinson Mosquera</span> — <?= date('Y') ?></p>
 
 </section>
