@@ -1,0 +1,56 @@
+# nginx sin privilegios: escucha en el puerto que Railway asigna (__PORT__) y habla con PHP-FPM por loopback.
+pid /tmp/nginx.pid;
+error_log stderr warn;
+worker_processes 1;
+
+events { worker_connections 512; }
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    # Un usuario no root no puede reabrir /dev/stdout; start.sh vuelca este FIFO a la salida estándar.
+    access_log /tmp/nginx/access.fifo;
+
+    client_body_temp_path /tmp/nginx/client_body;
+    proxy_temp_path       /tmp/nginx/proxy;
+    fastcgi_temp_path     /tmp/nginx/fastcgi;
+    uwsgi_temp_path       /tmp/nginx/uwsgi;
+    scgi_temp_path        /tmp/nginx/scgi;
+
+    server {
+        listen __PORT__;
+        server_name _;
+        root /var/www/html;
+        client_max_body_size 5m;
+        server_tokens off;
+
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+        location = /healthz { access_log off; return 200 "ok\n"; }
+
+        location = / { return 302 /login.php; }
+
+        # ^~ evita que algo dentro de uploaded_img se ejecute como PHP.
+        location ^~ /uploaded_img/ {
+            try_files $uri =404;
+            expires 7d;
+        }
+
+        location ~* \.(css|js|jpe?g|png|gif|svg|webp|ico)$ {
+            try_files $uri =404;
+            expires 7d;
+        }
+
+        location ~ \.php$ {
+            include /etc/nginx/fastcgi_params;
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;
+            fastcgi_param DOCUMENT_ROOT   /var/www/html;
+            fastcgi_read_timeout 60s;
+        }
+
+        location / { return 404; }
+    }
+}

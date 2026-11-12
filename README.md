@@ -100,6 +100,10 @@ evidencias/         scripts de prueba y guía para las capturas del informe
 docker-compose.yml  orquestación completa
 ```
 
+## Despliegue en la nube (Railway)
+
+La tienda también se despliega en Railway con una imagen propia (`docker/railway/Dockerfile`: nginx + PHP-FPM en un contenedor, usuario no root), una base MySQL administrada y un volumen para las imágenes. Los pasos y la prueba de resiliencia están en [RAILWAY.md](RAILWAY.md).
+
 ## Pruebas y evidencias
 
 `evidencias/probar.ps1` (Windows) o `evidencias/probar.sh` (Linux/macOS) ejecutan el protocolo completo y guardan los resultados en `evidencias/logs/`: arranque, estado de los contenedores, respuesta HTTP, aislamiento de redes, usuarios no root, logs y persistencia tras `restart` y tras `down` y `up`. Los pasos se explican en `evidencias/PASOS.md`.
