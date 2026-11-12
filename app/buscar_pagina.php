@@ -18,7 +18,7 @@ if ($termino !== '') {
 render_head('página de búsqueda');
 include 'header.php';
 render_mensajes($message ?? []);
-render_encabezado('productos', 'búsqueda');
+render_encabezado('Buscar productos', 'Búsqueda');
 ?>
 
 <section class="formulario-busqueda">

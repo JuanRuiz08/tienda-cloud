@@ -4,7 +4,7 @@
 
    <div class="flex">
 
-      <a href="admin_pagina.php" class="logo">Admin<span>Panel</span></a>
+      <a href="admin_pagina.php" class="logo"><span>Admin<b>Panel</b></span></a>
 
       <nav class="navbar">
          <a href="admin_pagina.php">inicio</a>

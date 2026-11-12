@@ -24,7 +24,7 @@ include 'admin_header.php';
          <p> ID de usuario : <span><?= e($usuario['id']) ?></span> </p>
          <p> Nombre de usuario : <span><?= e($usuario['name']) ?></span> </p>
          <p> Correo electrónico : <span><?= e($usuario['email']) ?></span> </p>
-         <p> Tipo de usuario : <span style="color:<?= $usuario['user_type'] === 'admin' ? 'var(--orange)' : '' ?>"><?= e($usuario['user_type']) ?></span> </p>
+         <p> Tipo de usuario : <span class="rol-<?= e($usuario['user_type']) ?>"><?= e($usuario['user_type']) ?></span> </p>
          <a href="admin_usuarios.php?delete=<?= (int) $usuario['id'] ?>" onclick="return confirm('¿Eliminar este usuario?');" class="boton-eliminar">Eliminar usuario</a>
       </div>
       <?php endforeach; ?>

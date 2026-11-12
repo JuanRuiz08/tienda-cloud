@@ -12,12 +12,12 @@ $productos = consulta($conn, 'SELECT * FROM `products`');
 render_head('tienda');
 include 'header.php';
 render_mensajes($message ?? []);
-render_encabezado('nuestra tienda', 'tienda');
+render_encabezado('Nuestra tienda', 'Tienda');
 ?>
 
 <section class="show-products">
 
-   <h1 class="title">últimos productos</h1>
+   <h1 class="title">Últimos productos</h1>
 
    <div class="caja-container">
       <?php render_productos($productos, '¡no se han añadido productos aún!'); ?>

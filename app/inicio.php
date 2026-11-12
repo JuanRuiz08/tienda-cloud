@@ -16,8 +16,13 @@ render_mensajes($message ?? []);
 
 <section class="inicio">
    <div class="contenedor">
-      <h3>productos</h3>
-      <a href="acerca.php" class="boton-blanco">Descubrir Más</a>
+      <span class="kicker">Papelería U.C.P.</span>
+      <h3>Todo para tu estudio, en un solo lugar</h3>
+      <p>Útiles escolares, dulcería y artículos de uso personal, sin salir del campus.</p>
+      <div class="acciones">
+         <a href="tienda.php" class="boton">Ver la tienda</a>
+         <a href="acerca.php" class="boton-blanco">Descubrir más</a>
+      </div>
    </div>
 </section>
 

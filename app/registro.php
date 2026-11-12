@@ -28,13 +28,14 @@ render_mensajes($message ?? []);
 <div class="form-container">
 
    <form action="" method="post">
-      <h3>Regístrate ahora en Papelería U.C.P</h3>
-      <input type="text" name="name" placeholder="Ingresa tu nombre" required class="caja">
-      <input type="email" name="email" placeholder="Ingresa tu correo electrónico" required class="caja">
-      <input type="password" name="password" placeholder="Ingresa tu contraseña" required class="caja">
-      <input type="password" name="cpassword" placeholder="Confirma tu contraseña" required class="caja">
-      <input type="submit" name="submit" value="Regístrate ahora" class="boton">
-      <p>¿Ya tienes una cuenta? <a href="login.php">Inicia sesión ahora</a></p>
+      <div class="marca">papelería U.C.P.</div>
+      <h3>Crea tu cuenta</h3>
+      <input type="text" name="name" placeholder="Nombre" autocomplete="name" required class="caja">
+      <input type="email" name="email" placeholder="Correo electrónico" autocomplete="email" required class="caja">
+      <input type="password" name="password" placeholder="Contraseña" autocomplete="new-password" required class="caja">
+      <input type="password" name="cpassword" placeholder="Confirma tu contraseña" autocomplete="new-password" required class="caja">
+      <input type="submit" name="submit" value="Registrarme" class="boton">
+      <p>¿Ya tienes una cuenta? <a href="login.php">Inicia sesión</a></p>
    </form>
 
 </div>

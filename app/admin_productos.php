@@ -141,12 +141,13 @@ include 'admin_header.php';
          <input type="hidden" name="update_p_id" value="<?= (int) $en_edicion['id'] ?>">
          <input type="hidden" name="update_old_image" value="<?= e($en_edicion['image']) ?>">
          <img src="uploaded_img/<?= e($en_edicion['image']) ?>" alt="">
-         <input type="text" name="update_name" value="<?= e($en_edicion['name']) ?>" class="caja" required placeholder="Ingrese el nombre del producto">
-         <input type="number" name="update_price" value="<?= e($en_edicion['price']) ?>" min="0" class="caja" required placeholder="Ingrese el precio del producto">
-         <input type="number" name="update_stock" value="<?= e($en_edicion['stock']) ?>" min="0" class="caja" required placeholder="Ingrese el stock del producto">
-         <input type="file" name="update_image" accept="image/jpg, image/jpeg, image/png" class="caja">
+         <h3>Editar producto</h3>
+         <label class="campo"><span>Nombre</span><input type="text" name="update_name" value="<?= e($en_edicion['name']) ?>" class="caja" required></label>
+         <label class="campo"><span>Precio (en miles)</span><input type="number" name="update_price" value="<?= e($en_edicion['price']) ?>" min="0" class="caja" required></label>
+         <label class="campo"><span>Stock</span><input type="number" name="update_stock" value="<?= e($en_edicion['stock']) ?>" min="0" class="caja" required></label>
+         <label class="campo"><span>Nueva imagen (opcional)</span><input type="file" name="update_image" accept="image/jpg, image/jpeg, image/png" class="caja"></label>
          <input type="submit" value="Actualizar producto" name="update_product" class="boton">
-         <a href="admin_productos.php" class="boton">Cancelar</a>
+         <a href="admin_productos.php" class="boton-opcion">Cancelar</a>
       </form>
    </section>
    <?php endif; ?>

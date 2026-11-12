@@ -4,15 +4,23 @@
 /** Imprime la tarjeta de un producto con su formulario "añadir al carrito". */
 function tarjeta_producto(array $producto): void
 {
+    $stock = (int) $producto['stock'];
+    $estado_stock = $stock === 0 ? ' agotado' : ($stock <= 3 ? ' bajo' : '');
     ?>
    <form action="" method="post" class="caja">
-      <img class="image" src="uploaded_img/<?= e($producto['image']) ?>" alt="">
-      <div class="name"><?= e($producto['name']) ?></div>
-      <div class="price">$<?= e($producto['price']) ?>Mil</div>
-      <div class="stock">stock:<?= e($producto['stock']) ?></div>
-      <input type="number" min="1" name="product_quantity" value="1" class="qty">
-      <input type="hidden" name="product_name" value="<?= e($producto['name']) ?>">
-      <input type="submit" value="añadir al carrito" name="add_to_cart" class="boton">
+      <div class="media"><img class="image" src="uploaded_img/<?= e($producto['image']) ?>" alt="<?= e($producto['name']) ?>" loading="lazy"></div>
+      <div class="info">
+         <div class="name"><?= e($producto['name']) ?></div>
+         <div class="meta">
+            <div class="price">$<?= e($producto['price']) ?> Mil</div>
+            <div class="stock<?= $estado_stock ?>"><?= $stock === 0 ? 'Agotado' : "Stock: $stock" ?></div>
+         </div>
+      </div>
+      <div class="acciones">
+         <input type="number" min="1" name="product_quantity" value="1" class="qty" aria-label="Cantidad">
+         <input type="hidden" name="product_name" value="<?= e($producto['name']) ?>">
+         <input type="submit" value="Añadir" name="add_to_cart" class="boton">
+      </div>
    </form>
 <?php
 }

@@ -8,8 +8,8 @@ $total_pendientes = (int) valor($conn, 'SELECT COALESCE(SUM(total_price), 0) FRO
 $total_completados = (int) valor($conn, 'SELECT COALESCE(SUM(total_price), 0) FROM `orders` WHERE payment_status = ?', 's', ['completed']);
 
 $tarjetas = [
-   ['$' . $total_pendientes . 'Mil', 'total pendientes'],
-   ['$' . $total_completados . 'Mil', 'pagos completados'],
+   ['$' . $total_pendientes . ' Mil', 'total pendientes'],
+   ['$' . $total_completados . ' Mil', 'pagos completados'],
    [valor($conn, 'SELECT COUNT(*) FROM `orders`'), 'Pedidos realizados'],
    [valor($conn, 'SELECT COUNT(*) FROM `products`'), 'productos añadidos'],
    [valor($conn, 'SELECT COUNT(*) FROM `users` WHERE user_type = ?', 's', ['user']), 'usuarios normales'],

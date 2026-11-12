@@ -49,16 +49,18 @@ render_mensajes($message ?? []);
 render_encabezado('Verificación', 'Verificación');
 ?>
 
+<div class="checkout-layout">
+
 <section class="display-order">
    <?php if (!$items): ?>
       <p class="vacio">Tu carrito está vacío</p>
    <?php endif; ?>
 
    <?php foreach ($items as $item): ?>
-   <p><?= e($item['name']) ?> <span>($<?= e($item['price']) ?>/- x <?= (int) $item['quantity'] ?>)</span></p>
+   <p><?= e($item['name']) ?> <span>$<?= e($item['price']) ?> Mil × <?= (int) $item['quantity'] ?></span></p>
    <?php endforeach; ?>
 
-   <div class="grand-total">Total general: <span>$<?= $total ?></span></div>
+   <div class="grand-total">Total general <span>$<?= $total ?> Mil</span></div>
 </section>
 
 <section class="checkout">
@@ -93,8 +95,11 @@ render_encabezado('Verificación', 'Verificación');
             <input type="text" name="pin_code" placeholder="Código Postal" required>
          </div>
       </div>
-      <input type="submit" name="order_btn" value="Realizar Pedido" class="boton-opcion">
+      <input type="submit" name="order_btn" value="Realizar pedido" class="boton-opcion">
    </form>
 </section>
+
+</div>
+
 
 <?php render_cierre(); ?>

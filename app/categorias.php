@@ -9,17 +9,12 @@ if ($aviso = procesar_agregar_al_carrito($conn, $user_id)) {
 
 $categorias = ['dulceria', 'uso personal', 'escolar'];
 
-render_head('Inicio');
+render_head('Categorías');
 include 'header.php';
 render_mensajes($message ?? []);
 ?>
 
-<section class="inicio">
-   <div class="contenedor">
-      <h3>Productos</h3>
-      <a href="acerca.php" class="boton-blanco">Descubrir Más</a>
-   </div>
-</section>
+<?php render_encabezado('Categorías', 'Categorías'); ?>
 
 <section class="show-products">
    <h1 class="title">Productos por Categoría</h1>

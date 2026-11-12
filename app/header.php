@@ -21,17 +21,20 @@ $cantidad_carrito = (int) valor($conn, 'SELECT COUNT(*) FROM `cart` WHERE user_i
 
          <nav class="navbar">
             <a href="categorias.php">Categorías</a>
-            <a href="inicio.php">inicio</a>
-            <a href="acerca.php">acerca de</a>
-            <a href="tienda.php">tienda</a>
-            <a href="pedidos.php">pedidos</a>
+            <a href="inicio.php">Inicio</a>
+            <a href="acerca.php">Acerca de</a>
+            <a href="tienda.php">Tienda</a>
+            <a href="pedidos.php">Pedidos</a>
          </nav>
 
          <div class="icons">
-            <div id="menu-btn" class="fas fa-bars"></div>
-            <a href="buscar_pagina.php" class="fas fa-search"></a>
-            <div id="user-btn" class="fas fa-user "></div>
-            <a href="carrito.php"> <i class="fas fa-shopping-cart"></i> <span>(<?= $cantidad_carrito ?>)</span> </a>
+            <div id="menu-btn" class="fas fa-bars" role="button" aria-label="Menú"></div>
+            <a href="buscar_pagina.php" class="fas fa-search" aria-label="Buscar"></a>
+            <div id="user-btn" class="fas fa-user" role="button" aria-label="Mi cuenta"></div>
+            <a href="carrito.php" aria-label="Carrito">
+               <i class="fas fa-shopping-cart"></i>
+               <span class="contador<?= $cantidad_carrito ? '' : ' vacio-carrito' ?>"><?= $cantidad_carrito ?></span>
+            </a>
          </div>
 
          <div class="usuario-caja">
