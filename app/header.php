@@ -1,19 +1,7 @@
 <?php
-include 'conexion.php';
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$user_id = $_SESSION['user_id'] ?? null;
-
-if (!$user_id) {
-    header('location:login.php');
-    exit();
-}
-
-
-
+// Barra superior de la tienda. Se incluye desde cada página, que ya cargó includes/app.php.
+$user_id = requerir_usuario();
+$cantidad_carrito = (int) valor($conn, 'SELECT COUNT(*) FROM `cart` WHERE user_id = ?', 'i', [$user_id]);
 ?>
 
 <header class="header">
@@ -21,9 +9,7 @@ if (!$user_id) {
    <div class="header-1">
       <div class="flex">
          <div class="share">
-            
-               <a href="https://www.instagram.com/papeleriaucp/" class="fab fa-instagram"></a>
-            
+            <a href="https://www.instagram.com/papeleriaucp/" class="fab fa-instagram"></a>
          </div>
          <p> nuevo <a href="login.php">iniciar sesión</a> | <a href="registro.php">registrarse</a> </p>
       </div>
@@ -34,11 +20,10 @@ if (!$user_id) {
          <a href="inicio.php" class="logo">papeleria U.C.P.</a>
 
          <nav class="navbar">
-         <a href="categorias.php" >Categorías</a>
+            <a href="categorias.php">Categorías</a>
             <a href="inicio.php">inicio</a>
             <a href="acerca.php">acerca de</a>
             <a href="tienda.php">tienda</a>
-           
             <a href="pedidos.php">pedidos</a>
          </nav>
 
@@ -46,16 +31,12 @@ if (!$user_id) {
             <div id="menu-btn" class="fas fa-bars"></div>
             <a href="buscar_pagina.php" class="fas fa-search"></a>
             <div id="user-btn" class="fas fa-user "></div>
-            <?php
-               $select_cart_number = mysqli_query($conn, "SELECT * FROM `cart` WHERE user_id = '$user_id'") or die('consulta fallida');
-               $cart_rows_number = mysqli_num_rows($select_cart_number); 
-            ?>
-            <a href="carrito.php"> <i class="fas fa-shopping-cart"></i> <span>(<?php echo $cart_rows_number; ?>)</span> </a>
+            <a href="carrito.php"> <i class="fas fa-shopping-cart"></i> <span>(<?= $cantidad_carrito ?>)</span> </a>
          </div>
 
          <div class="usuario-caja">
-            <p>nombre de usuario : <span><?php echo $_SESSION['user_name']; ?></span></p>
-            <p>correo electrónico : <span><?php echo $_SESSION['user_email']; ?></span></p>
+            <p>nombre de usuario : <span><?= e($_SESSION['user_name'] ?? '') ?></span></p>
+            <p>correo electrónico : <span><?= e($_SESSION['user_email'] ?? '') ?></span></p>
             <a href="cerrar_sesion.php" class="boton-eliminar">cerrar sesión</a>
          </div>
       </div>

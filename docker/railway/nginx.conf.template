@@ -34,6 +34,9 @@ http {
 
         location = / { return 302 /login.php; }
 
+        # Código compartido (no es una página): no debe poder ejecutarse por URL.
+        location ^~ /includes/ { return 404; }
+
         # ^~ evita que algo dentro de uploaded_img se ejecute como PHP.
         location ^~ /uploaded_img/ {
             try_files $uri =404;

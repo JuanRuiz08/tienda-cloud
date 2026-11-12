@@ -1,0 +1,43 @@
+/* Página de pago con PayPal (pago-paypal.php) */
+body {
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: white;
+    font-family: 'Arial', sans-serif;
+}
+
+.payment-container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.total-price {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffc107;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#paypal-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 50px;
+    color: rgba(255, 255, 255, 0.7);
+}

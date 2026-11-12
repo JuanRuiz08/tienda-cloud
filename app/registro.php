@@ -1,63 +1,28 @@
 <?php
+require_once __DIR__ . '/includes/app.php';
 
-include 'conexion.php';
+if (isset($_POST['submit'])) {
+   $name = trim($_POST['name']);
+   $email = trim($_POST['email']);
+   // Siempre se crea como usuario normal: el rol admin no se puede elegir desde el formulario.
+   $user_type = 'user';
 
-if(isset($_POST['submit'])){
-
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    // Siempre se crea como usuario normal: el rol admin no se puede elegir desde el formulario.
-    $user_type = 'user';
-
-    if(!hash_equals($_POST['password'], $_POST['cpassword'])){
-        $message[] = '¡La confirmación de la contraseña no coincide!';
-    }else{
-        $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("CALL registerUser(?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $name, $email, $pass, $user_type);
-        try {
-            $stmt->execute();
-            $stmt->close();
-            app_log('info', 'usuario registrado: ' . $email);
-            header('location:login.php');
-            exit();
-        } catch (mysqli_sql_exception $e) {
-            $message[] = $e->getMessage();
-        }
-    }
+   if (!hash_equals($_POST['password'], $_POST['cpassword'])) {
+      $message[] = '¡La confirmación de la contraseña no coincide!';
+   } else {
+      try {
+         consulta($conn, 'CALL registerUser(?, ?, ?, ?)', 'ssss',
+            [$name, $email, password_hash($_POST['password'], PASSWORD_DEFAULT), $user_type]);
+         app_log('info', 'usuario registrado: ' . $email);
+         redirigir('login.php');
+      } catch (mysqli_sql_exception $e) {
+         $message[] = $e->getMessage();
+      }
+   }
 }
 
-?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-   <meta charset="UTF-8">
-   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Registro</title>
-   <link rel="icon" id="png" href="images/icon2.png">
-
-   <!-- Enlace CDN de Font Awesome -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-   <!-- Enlace del archivo CSS personalizado -->
-   <link rel="stylesheet" href="css/style.css">
-
-</head>
-<body>
-
-<?php
-if(isset($message)){
-    foreach($message as $mensaje){
-        echo '
-        <div class="mensaje">
-            <span>'.$mensaje.'</span>
-            <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
-        </div>
-        ';
-    }
-}
+render_head('Registro');
+render_mensajes($message ?? []);
 ?>
 
 <div class="form-container">
@@ -76,4 +41,3 @@ if(isset($message)){
 
 </body>
 </html>
-

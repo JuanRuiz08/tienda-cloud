@@ -92,6 +92,10 @@ docker compose down -v             # borrar también los volúmenes (empieza de 
 app/                código PHP, CSS, JS e imágenes de la tienda
   bootstrap.php     logs a stderr, sesiones en MySQL, validación de imágenes
   conexion.php      conexión a MySQL leyendo variables de entorno
+  includes/         código compartido (no se sirve por URL): app.php (carga todo), sesion.php (acceso),
+                    vistas.php (head, mensajes, cierre), datos.php (consultas con parámetros),
+                    tienda.php (tarjeta de producto y carrito), autenticacion.php (login)
+  header.php, footer.php, admin_header.php   partes comunes de las páginas
 database/init/      esquema, procedimientos almacenados y datos de muestra
 docker/app/         Dockerfile y configuración de PHP-FPM
 docker/web/         Dockerfile y configuración de nginx

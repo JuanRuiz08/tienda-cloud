@@ -1,31 +1,19 @@
-let userBox = document.querySelector('.header .header-2 .user-box');
+const header2 = document.querySelector('.header .header-2');
+const navbar = header2.querySelector('.navbar');
+const userBox = header2.querySelector('.usuario-caja');
 
-document.querySelector('#user-btn').onclick = () =>{
+document.querySelector('#user-btn').onclick = () => {
    userBox.classList.toggle('active');
    navbar.classList.remove('active');
-}
+};
 
-let navbar = document.querySelector('.header .header-2 .navbar');
-
-document.querySelector('#menu-btn').onclick = () =>{
+document.querySelector('#menu-btn').onclick = () => {
    navbar.classList.toggle('active');
    userBox.classList.remove('active');
-}
+};
 
-window.onscroll = () =>{
+window.onscroll = () => {
    userBox.classList.remove('active');
    navbar.classList.remove('active');
-
-   if(window.scrollY > 60){
-      document.querySelector('.header .header-2').classList.add('active');
-   }else{
-      document.querySelector('.header .header-2').classList.remove('active');
-   }
-}
-// Submenú de categorías
-const enlaceCategorias = document.getElementById('enlace-categorias');
-const submenuCategorias = document.getElementById('submenu-categorias');
-enlaceCategorias.addEventListener('click', (event) => {
-    event.preventDefault();
-    submenuCategorias.classList.toggle('visible');
-});
+   header2.classList.toggle('active', window.scrollY > 60);
+};

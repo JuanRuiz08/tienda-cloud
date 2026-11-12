@@ -1,11 +1,8 @@
 <?php
+require_once __DIR__ . '/includes/app.php';
 
-include 'conexion.php';
-
-session_start();
+iniciar_sesion();
 session_unset();
 session_destroy();
 
-header('location:login.php');
-
-?>
+redirigir('login.php');

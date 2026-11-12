@@ -1,15 +1,4 @@
-<?php
-if(isset($message)){
-   foreach($message as $message){
-      echo '
-      <div class="mensaje">
-         <span>'.$message.'</span>
-         <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
-      </div>
-      ';
-   }
-}
-?>
+<?php render_mensajes($message ?? []); ?>
 
 <header class="header">
 
@@ -30,8 +19,8 @@ if(isset($message)){
       </div>
 
       <div class="account-box">
-         <p>username : <span><?php echo $_SESSION['admin_name']; ?></span></p>
-         <p>email : <span><?php echo $_SESSION['admin_email']; ?></span></p>
+         <p>username : <span><?= e($_SESSION['admin_name'] ?? '') ?></span></p>
+         <p>email : <span><?= e($_SESSION['admin_email'] ?? '') ?></span></p>
          <a href="pagar.php" class="boton-eliminar">pagar</a>
          <div>new <a href="login.php">login</a> | <a href="registro.php">registro</a></div>
       </div>
