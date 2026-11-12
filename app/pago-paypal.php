@@ -1,37 +1,49 @@
 <?php
-require_once __DIR__ . '/includes/sesion.php';
-require_once __DIR__ . '/includes/vistas.php';
+require_once __DIR__ . '/includes/app.php';
+require_once __DIR__ . '/includes/paypal.php';
 
-iniciar_sesion();
+$user_id = requerir_usuario();
 
-if (!isset($_SESSION['order'])) {
-   redirigir('inicio.php');
+$pedido = pedido_pendiente($conn, $user_id, (int) ($_GET['pedido'] ?? 0));
+if ($pedido === null) {
+   redirigir('pedidos.php');
 }
 
-$total = $_SESSION['order']['total_price'];
-$paypal_client_id = getenv('PAYPAL_CLIENT_ID') ?: '';
+$disponible = paypal_configurado();
+$usd = total_en_usd((int) $pedido['total_price']);
 
-render_head('Pago con PayPal', 'style.css', [
-   'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css',
-   'pago-paypal.css',
-]);
+render_head('Pago con PayPal');
+include 'header.php';
+render_encabezado('Pago', 'Pago');
 ?>
-   <div class="payment-container">
-       <h1>¡Estás a un paso de completar tu compra!</h1>
-       <p class="total-price">Total a pagar: $<?= number_format($total, 2) ?></p>
-       <div id="paypal-button-container"></div>
-       <div class="footer">
-           <p>Tu compra está protegida y garantizada por PayPal.</p>
-       </div>
+
+<section class="pago">
+   <div class="pago-tarjeta">
+      <p class="pago-etiqueta">Pedido #<?= (int) $pedido['id'] ?></p>
+      <h1>Completa tu pago</h1>
+      <p class="pago-productos"><?= e($pedido['total_products']) ?></p>
+
+      <div class="pago-total">
+         <span>$<?= e($pedido['total_price']) ?> Mil</span>
+         <small>PayPal lo cobra como USD <?= e($usd) ?></small>
+      </div>
+
+      <?php if ($disponible): ?>
+         <div id="paypal-button-container"></div>
+         <div id="pago-estado" role="status" aria-live="polite"></div>
+      <?php else: ?>
+         <p class="pago-aviso">El pago en línea no está disponible por ahora. Tu pedido quedó registrado como pendiente.</p>
+         <a href="pedidos.php" class="boton">Ver mis pedidos</a>
+      <?php endif; ?>
+
+      <p class="pago-nota"><i class="fas fa-lock"></i> Pago seguro con PayPal. Puedes pagar más tarde desde <a href="pedidos.php">Mis pedidos</a>.</p>
    </div>
+</section>
 
-   <?php if ($paypal_client_id !== ''): ?>
-   <script src="https://www.paypal.com/sdk/js?client-id=<?= urlencode($paypal_client_id) ?>"></script>
-   <?php else: ?>
-   <p>El pago con PayPal no está configurado (falta PAYPAL_CLIENT_ID).</p>
-   <?php endif; ?>
-   <script>window.PAGO_TOTAL = '<?= number_format($total, 2, '.', '') ?>';</script>
-   <script src="js/paypal.js"></script>
+<?php if ($disponible): ?>
+<script src="https://www.paypal.com/sdk/js?client-id=<?= urlencode(paypal_config()['client_id']) ?>&amp;currency=USD&amp;intent=capture"></script>
+<script>window.PAGO = { pedido: <?= (int) $pedido['id'] ?> };</script>
+<script src="<?= e(url_con_version('js/paypal.js')) ?>"></script>
+<?php endif; ?>
 
-</body>
-</html>
+<?php render_cierre(); ?>

@@ -66,7 +66,8 @@ Se definen en `.env` (no se sube a Git; el modelo está en `.env.example`). Ning
 |---|---|
 | `DB_NAME`, `DB_USER`, `DB_PASS` | Base y usuario de la aplicación (los usa `app` y los crea `db`) |
 | `MYSQL_ROOT_PASSWORD` | Clave del usuario root de MySQL |
-| `PAYPAL_CLIENT_ID` | Client-id de PayPal Developer (opcional; sin él no se muestra el botón de pago) |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | Credenciales de una app de PayPal Developer (opcionales; sin ellas el pago con tarjeta queda desactivado y el pedido queda pendiente) |
+| `PAYPAL_ENV`, `PAYPAL_COP_PER_USD` | `sandbox` o `live`; pesos por dólar para convertir el total (PayPal no cobra en COP) |
 | `WEB_PORT`, `PMA_PORT` | Puertos publicados en tu equipo (por defecto 8080 y 8081) |
 
 ## Comandos útiles
@@ -122,4 +123,4 @@ La tienda también se despliega en Railway con una imagen propia (`docker/railwa
 
 ## Deuda técnica pendiente
 
-Quedaron fuera de esta fase y se documentan en el informe: varias consultas del código original siguen armando SQL con variables sin parametrizar, no hay protección CSRF en los formularios y el pago de PayPal no se verifica en el servidor.
+Quedaron fuera de esta fase y se documentan en el informe: no hay protección CSRF en los formularios ni límite de intentos de inicio de sesión. (Ya resueltos: las consultas usan parámetros y el pago de PayPal se crea y se captura en el servidor.)

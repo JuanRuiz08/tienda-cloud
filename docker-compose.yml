@@ -36,6 +36,10 @@ services:
       DB_USER: ${DB_USER:?Falta DB_USER en .env}
       DB_PASS: ${DB_PASS:?Falta DB_PASS en .env}
       PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_ENV: ${PAYPAL_ENV:-sandbox}
+      PAYPAL_COP_PER_USD: ${PAYPAL_COP_PER_USD:-4000}
+      PAYPAL_API_BASE: ${PAYPAL_API_BASE:-}
     volumes:
       - uploads:/var/www/html/uploaded_img
     depends_on:

@@ -1,51 +1,89 @@
 # Despliegue en Railway
 
-Railway construye y ejecuta nuestro propio contenedor (`docker/railway/Dockerfile`, indicado en `railway.json`); no se despliega código plano.
+Railway construye y ejecuta nuestro propio contenedor (`docker/railway/Dockerfile`, indicado con la variable `RAILWAY_DOCKERFILE_PATH`); no se despliega código plano. URL pública: https://papeleriaucp.up.railway.app
 
 ## Arquitectura en Railway
 
 ```
-Usuario ──HTTPS──▶ dominio público de Railway ──▶ servicio "tienda" (nginx + PHP-FPM, un contenedor, usuario www-data)
-                                                       │  volumen en /var/www/html/uploaded_img
-                                                       └── red privada ──▶ servicio "MySQL" (base administrada con volumen propio)
+Usuario ──HTTPS──▶ dominio de Railway ──▶ servicio "tienda" (nginx + PHP-FPM, un contenedor, usuario www-data)
+                                              │  volumen en /var/www/html/uploaded_img
+                                              └── red privada ──▶ servicio "MySQL" (base administrada con volumen propio)
 ```
 
-Por qué nginx y PHP-FPM van juntos aquí: Railway asigna el puerto por la variable `PORT`, no permite compartir un volumen entre dos servicios (`uploads` lo necesitan `web` y `app` en local) y la comunicación FastCGI entre servicios sería tráfico interno extra. En local se conserva la versión de tres contenedores del `docker-compose.yml`.
+nginx y PHP-FPM van en el mismo contenedor porque Railway asigna el puerto con la variable `PORT`, no comparte volúmenes entre servicios y la red privada es de pago por tráfico. En local se conserva la versión de tres contenedores del `docker-compose.yml`.
 
-## Pasos
+- **La base se carga sola:** `docker/railway/init-db.php` importa `database/init/01_shop_db.sql` en el primer arranque, solo si la base está vacía.
+- **Imágenes subidas:** viven en el volumen; el primer arranque copia las de muestra (archivo marcador `.seeded`).
+- **Logs:** nginx y PHP-FPM escriben en la salida estándar, visibles en el panel y con `railway logs`.
 
-1. **Subir el código** con la carpeta `docker/railway/` y `railway.json` a GitHub.
-2. En Railway: **New Project → Deploy from GitHub repo** y elegir el repositorio. Toma `railway.json` y construye con el Dockerfile.
-3. **+ New → Database → Add MySQL** en el mismo proyecto.
-4. En el servicio de la tienda → **Variables** (se referencian las del servicio MySQL, así ninguna credencial queda en el código):
+## Desplegar (CLI)
 
-   | Variable | Valor |
-   |---|---|
-   | `DB_HOST` | `${{MySQL.MYSQLHOST}}` |
-   | `DB_USER` | `${{MySQL.MYSQLUSER}}` |
-   | `DB_PASS` | `${{MySQL.MYSQLPASSWORD}}` |
-   | `DB_NAME` | `${{MySQL.MYSQLDATABASE}}` |
-   | `PAYPAL_CLIENT_ID` | client-id de PayPal Developer (opcional) |
+Requisitos: `npm install -g @railway/cli` y `railway login`.
 
-5. **Volumen para las imágenes:** servicio de la tienda → **Volumes → New Volume**, ruta de montaje `/var/www/html/uploaded_img`. En el primer arranque el contenedor copia las imágenes de muestra.
-6. **Dominio público:** servicio de la tienda → **Settings → Networking → Generate Domain**.
-7. **Cargar el esquema y los datos de muestra** (Railway no ejecuta `database/init/`). Desde el servicio MySQL → **Connect → Public Network** se obtienen host, puerto y clave; luego, desde la raíz del repositorio:
+```bash
+cd tienda-cloud
+railway status
+railway up --service tienda --ci
+```
 
-   ```powershell
-   docker run --rm -v "${PWD}/database/init:/sql" mysql:8.0 sh -c "mysql -h HOST_PUBLICO -P PUERTO_PUBLICO -uroot -pCLAVE railway < /sql/01_shop_db.sql"
+Sube la carpeta local (lo que haya, esté o no en Git), construye la imagen y reemplaza el contenedor. La base de datos no se toca.
+
+## Primera vez: crear el proyecto
+
+```bash
+railway init --name tienda-cloud
+railway add --database mysql
+railway add --service tienda \
+  --variables 'DB_HOST=${{MySQL.MYSQLHOST}}' --variables 'DB_USER=${{MySQL.MYSQLUSER}}' \
+  --variables 'DB_PASS=${{MySQL.MYSQLPASSWORD}}' --variables 'DB_NAME=${{MySQL.MYSQLDATABASE}}'
+railway service link tienda
+railway variable set RAILWAY_DOCKERFILE_PATH=docker/railway/Dockerfile --service tienda --skip-deploys
+railway volume add --mount-path /var/www/html/uploaded_img
+railway domain --service tienda
+railway up --service tienda --ci
+```
+
+Cambiar el subdominio (`<nombre>.up.railway.app`; quitar `.up.railway.app` solo es posible con un dominio propio):
+
+```bash
+railway domain list --service tienda
+railway domain update <ID_DEL_DOMINIO> --domain papeleriaucp --service tienda
+```
+
+## Variables de entorno (panel del servicio → Variables)
+
+| Variable | Valor |
+|---|---|
+| `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME` | Referencias al servicio MySQL: `${{MySQL.MYSQLHOST}}`, `${{MySQL.MYSQLUSER}}`, `${{MySQL.MYSQLPASSWORD}}`, `${{MySQL.MYSQLDATABASE}}` |
+| `RAILWAY_DOCKERFILE_PATH` | `docker/railway/Dockerfile` |
+| `PAYPAL_CLIENT_ID` | Client ID de la app de PayPal Developer |
+| `PAYPAL_CLIENT_SECRET` | Secret de la misma app (no se sube a Git ni se muestra en pantalla) |
+| `PAYPAL_ENV` | `sandbox` (pruebas) o `live` (cobros reales) |
+| `PAYPAL_COP_PER_USD` | Pesos por dólar para convertir el total (por defecto `4000`) |
+
+Sin las variables de PayPal la tienda funciona: el pago con tarjeta muestra "no disponible" y el pedido queda pendiente.
+
+## Pago con PayPal
+
+1. En https://developer.paypal.com → *Apps & Credentials* → modo **Sandbox** → *Create App*. Copia *Client ID* y *Secret*.
+2. Guárdalos en Railway:
+
+   ```bash
+   railway variable set PAYPAL_CLIENT_ID=... PAYPAL_ENV=sandbox --service tienda
+   railway variable set PAYPAL_CLIENT_SECRET=... --service tienda
    ```
+3. Para probar usa una cuenta *Personal* de Sandbox (*Testing Tools → Sandbox Accounts*) al iniciar sesión en la ventana de PayPal.
 
-   Reemplaza `HOST_PUBLICO`, `PUERTO_PUBLICO` y `CLAVE` por los valores del panel. Se ejecuta una sola vez.
-8. Abrir la URL generada y entrar con un usuario de demostración. Si la app es pública, cambia las contraseñas de demostración.
+Flujo: `pagar.php` crea el pedido (pendiente); con tarjeta lleva a `pago-paypal.php?pedido=ID`; el botón llama a `api_paypal.php`, que crea la orden con el total leído de la base de datos, captura el pago en PayPal y solo si PayPal confirma `COMPLETED` por el monto esperado marca el pedido como `completed`. Efectivo queda pendiente.
 
 ## Prueba de resiliencia para la demo
 
 1. En la URL pública, registrar un usuario y hacer un pedido.
-2. En el panel del servicio: **⋯ → Restart** (o **Redeploy**).
+2. En el panel del servicio: *Deployments → Redeploy* (o `railway service restart --service tienda`).
 3. Cuando vuelva a estar activo, iniciar sesión con el mismo usuario: el pedido y el usuario siguen ahí, porque los datos están en MySQL y las imágenes en el volumen.
 
 ## Para mostrar en la sustentación
 
-- **Logs en tiempo real:** pestaña *Deployments → View Logs* (nginx y PHP salen por la salida estándar).
+- **Logs en tiempo real:** pestaña *Deployments → View Logs* o `railway logs --service tienda`.
 - **Recursos:** pestaña *Metrics* del servicio.
 - **Variables seguras:** pestaña *Variables* (no hay credenciales en el repositorio).

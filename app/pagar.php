@@ -19,28 +19,19 @@ if (isset($_POST['order_btn']) && $total > 0) {
    $direccion = 'flat no. ' . $f['flat'] . ', ' . $f['street'] . ', ' . $f['city'] . ', ' . $f['country'] . ' - ' . $f['pin_code'];
    $fecha = date('d-M-Y');
 
+   $metodo = in_array($f['method'], ['efectivo', 'tarjeta'], true) ? $f['method'] : 'efectivo';
+
    consulta($conn,
       'INSERT INTO `orders`(user_id, name, number, email, method, address, total_products, total_price, placed_on)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       'issssssis',
-      [$user_id, $f['name'], $f['number'], $f['email'], $f['method'], $direccion, $resumen_productos, $total, $fecha]);
+      [$user_id, $f['name'], $f['number'], $f['email'], $metodo, $direccion, $resumen_productos, $total, $fecha]);
+   $pedido_id = (int) valor($conn, 'SELECT LAST_INSERT_ID()');
    consulta($conn, 'DELETE FROM `cart` WHERE user_id = ?', 'i', [$user_id]);
-   app_log('info', "pedido creado user_id=$user_id total=$total");
+   app_log('info', "pedido $pedido_id creado user_id=$user_id total=$total método=$metodo");
 
-   // pago-paypal.php lee el pedido de la sesión.
-   $_SESSION['order'] = [
-      'user_id' => $user_id,
-      'name' => $f['name'],
-      'number' => $f['number'],
-      'email' => $f['email'],
-      'method' => $f['method'],
-      'address' => $direccion,
-      'total_products' => $resumen_productos,
-      'total_price' => $total,
-      'placed_on' => $fecha,
-   ];
-
-   redirigir('pago-paypal.php');
+   // Tarjeta: se paga ahora con PayPal. Efectivo: queda pendiente y se paga al recibir el pedido.
+   redirigir($metodo === 'tarjeta' ? "pago-paypal.php?pedido=$pedido_id" : "pedidos.php?nuevo=$pedido_id");
 }
 
 render_head('Verificación de compra');
@@ -83,7 +74,7 @@ render_encabezado('Verificación', 'Verificación');
             <span>Método de Pago:</span>
             <select name="method" required>
                <option value="efectivo">Efectivo</option>
-               <option value="tarjeta">Tarjeta</option>
+               <option value="tarjeta">Tarjeta (PayPal)</option>
             </select>
          </div>
          <div class="inputBox">

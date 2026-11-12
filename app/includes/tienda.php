@@ -66,6 +66,14 @@ function procesar_agregar_al_carrito(mysqli $conn, ?int $user_id): ?string
     return '¡Producto añadido al carrito!';
 }
 
+/** Pedido del usuario que sigue pendiente de pago, o null (así nadie paga ni ve pedidos ajenos). */
+function pedido_pendiente(mysqli $conn, int $user_id, int $pedido_id): ?array
+{
+    return consulta($conn,
+        "SELECT * FROM `orders` WHERE id = ? AND user_id = ? AND payment_status = 'pending'",
+        'ii', [$pedido_id, $user_id])[0] ?? null;
+}
+
 /** Filas del carrito de un usuario. */
 function items_carrito(mysqli $conn, int $user_id): array
 {
