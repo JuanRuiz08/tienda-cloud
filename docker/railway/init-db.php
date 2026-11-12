@@ -15,6 +15,12 @@ for ($i = 1; $i <= 30; $i++) {
 }
 if (!$db || $db->connect_errno) { fwrite(STDERR, "[init-db] ERROR: no hay conexión\n"); exit(1); }
 $db->set_charset('utf8mb4');
+$db->query("SET collation_connection = utf8mb4_general_ci");
+
+// El esquema usa utf8mb4_general_ci (como el mysql de docker-compose). El MySQL administrado de Railway
+// trae utf8mb4_0900_ai_ci por defecto y los procedimientos heredan el collation de la base: sin esto
+// falla con "Illegal mix of collations".
+$db->query("ALTER DATABASE `$n` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
 
 if ($db->query("SHOW TABLES LIKE 'products'")->num_rows > 0) {
     fwrite(STDERR, "[init-db] la base ya tiene datos, no se importa\n");
