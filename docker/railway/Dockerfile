@@ -16,12 +16,14 @@ COPY docker/app/php-fpm.conf /usr/local/etc/php-fpm.conf
 RUN sed -i 's/^listen = 9000/listen = 127.0.0.1:9000/; s#^error_log = .*#error_log = /tmp/php-fpm.log#' /usr/local/etc/php-fpm.conf
 
 COPY docker/railway/nginx.conf.template /etc/nginx/nginx.conf.template
+COPY docker/railway/init-db.php /usr/local/bin/init-db.php
 COPY --chmod=755 docker/railway/start.sh /usr/local/bin/start.sh
 COPY --chmod=755 docker/railway/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start.sh /etc/nginx/nginx.conf.template
 
 COPY app/ /var/www/html/
 COPY seed/uploaded_img/ /opt/seed/uploaded_img/
+COPY database/init/ /opt/init/
 RUN mkdir -p /var/www/html/uploaded_img && chown www-data:www-data /var/www/html/uploaded_img
 
 WORKDIR /var/www/html
