@@ -222,7 +222,7 @@ if (tarjetasStock.length) {
    document.addEventListener('visibilitychange', consultarStock);
 }
 
-/* ---------- Mis pedidos en vivo: el estado cambia solo cuando el admin o PayPal lo actualizan ----------
+/* ---------- Mis pedidos en vivo: el estado cambia solo cuando el admin o Wompi lo actualizan ----------
    Se consulta api_pedidos.php (una "versión" diminuta) y solo si cambia se vuelve a pedir la lista. */
 const zonaPedidos = document.querySelector('.pedidos [data-vivo="pedidos"]');
 

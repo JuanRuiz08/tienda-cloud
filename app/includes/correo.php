@@ -109,9 +109,9 @@ function correo_pedido(mysqli $conn, int $pedido_id, string $tipo): void
 
     $titulos = [
         'creado' => ["Recibimos tu pedido #$pedido_id", 'Recibimos tu pedido', $pedido['method'] === 'tarjeta'
-            ? 'Para terminar, paga con tarjeta desde «Mis pedidos» en la tienda.'
+            ? 'Para terminar, paga en línea desde «Mis pedidos» en la tienda. Tienes ' . minutos_para_pagar() . ' minutos; después el pedido se cancela solo.'
             : 'Pagarás en efectivo cuando recibas tu pedido.'],
-        'pagado' => ["Pago recibido — pedido #$pedido_id", '¡Pago recibido!', 'Confirmamos tu pago con PayPal. Ya estamos preparando tu pedido.'],
+        'pagado' => ["Pago recibido — pedido #$pedido_id", '¡Pago recibido!', 'Confirmamos tu pago en línea. Ya estamos preparando tu pedido.'],
         'completado' => ["Tu pedido #$pedido_id está completo", 'Pedido completado', 'Tu pedido quedó marcado como completado. ¡Gracias por tu compra!'],
     ];
     [$asunto, $titulo, $mensaje] = $titulos[$tipo] ?? $titulos['creado'];

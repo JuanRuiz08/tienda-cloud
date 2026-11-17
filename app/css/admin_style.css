@@ -370,6 +370,9 @@ body.menu-abierto { overflow: hidden; }
 .pedidos .caja > header small { font-size: .8rem; color: var(--muted); }
 .estado { flex-shrink: 0; padding: .3rem .8rem; border-radius: var(--r-pill); background: var(--accent-50); color: var(--accent-ink); font-size: .76rem; font-weight: 800; }
 .estado-completed { background: var(--ok-50); color: var(--ok); }
+.estado-cancelled { background: var(--danger-50); color: var(--danger); }
+.pedidos .caja.cancelado { background: color-mix(in srgb, var(--danger-50) 45%, var(--surface)); border-left-color: var(--danger); opacity: .85; }
+.origen-tienda { display: inline-block; margin-left: .4rem; padding: .1rem .5rem; border-radius: var(--r-pill); background: var(--brand-50); color: var(--brand); font-size: .7rem; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; }
 .pedidos .caja.completado .estado::before { content: "\2713\00a0"; }
 
 .filtros { display: flex; flex-wrap: wrap; gap: .5rem; max-width: var(--ancho); margin: 0 auto 1.5rem; }
@@ -569,4 +572,32 @@ body.menu-abierto { overflow: hidden; }
 @media (max-width: 700px) {
    .registro { grid-template-columns: 40px minmax(0, 1fr); }
    .quien { grid-column: 2; text-align: left; }
+}
+/* ---------- Venta en tienda ---------- */
+.venta { padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem); }
+.venta-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.1rem; align-items: start; max-width: var(--ancho); margin: 0 auto; }
+.venta .panel-card { padding: 1.4rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--sh-1); }
+.venta .panel-card h2 { font-size: 1.2rem; letter-spacing: -.01em; }
+.venta .panel-card .sub { margin: .2rem 0 1rem; font-size: .88rem; color: var(--muted); }
+.venta-productos { display: grid; gap: .5rem; margin-top: .9rem; max-height: 62vh; overflow: auto; padding-right: .3rem; list-style: none; }
+.venta-fila { display: grid; grid-template-columns: 48px minmax(0, 1fr) 88px; align-items: center; gap: .8rem; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); transition: border-color var(--t) var(--ease), background-color var(--t) var(--ease); }
+.venta-fila[hidden] { display: none; }
+.venta-fila img { width: 48px; height: 48px; object-fit: cover; border-radius: 10px; background: var(--surface); }
+.venta-fila .venta-dato { min-width: 0; }
+.venta-fila strong { display: block; overflow: hidden; font-size: .95rem; text-overflow: ellipsis; white-space: nowrap; }
+.venta-fila small { color: var(--muted); font-size: .8rem; }
+.venta-fila input { padding: .5rem .6rem; text-align: center; font-weight: 700; }
+.venta-fila.elegido { border-color: var(--brand); background: var(--brand-50); }
+.venta-fila.agotado { opacity: .55; }
+.venta-resumen { position: sticky; top: 5.5rem; display: grid; gap: 1rem; }
+.venta-total { display: grid; gap: .1rem; padding: 1rem; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r); text-align: center; }
+.venta-total span { font-size: 2rem; font-weight: 800; letter-spacing: -.03em; }
+.venta-total small { color: var(--muted); font-size: .82rem; }
+.venta-resumen .boton { width: 100%; }
+.venta-nota { font-size: .8rem; color: var(--muted); }
+.venta-ultimas { max-width: var(--ancho); margin: 1.1rem auto 0; }
+@media (max-width: 860px) {
+   .venta-grid { grid-template-columns: 1fr; }
+   .venta-resumen { position: static; }
+   .venta-productos { max-height: none; }
 }

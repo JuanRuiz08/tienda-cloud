@@ -3,7 +3,7 @@
 Proyecto final de Optativa IV Cloud Computing, Universidad Católica de Pereira (profesor Jorge Leonardo Bañol).
 Integrantes: Juan David Ruiz, Yarlinson Mosquera, Diego Carmona.
 
-Es una tienda virtual hecha en PHP, HTML, CSS, JavaScript y MySQL (catálogo, carrito, pedidos, pago con PayPal y panel de administración). En esta fase se adaptó a la nube (replatforming) y se empaquetó con Docker, sin reescribirla desde cero.
+Es una tienda virtual hecha en PHP, HTML, CSS, JavaScript y MySQL (catálogo, carrito, pedidos, pago en línea con Wompi y panel de administración). En esta fase se adaptó a la nube (replatforming) y se empaquetó con Docker, sin reescribirla desde cero.
 
 ## Arquitectura
 
@@ -66,9 +66,8 @@ Se definen en `.env` (no se sube a Git; el modelo está en `.env.example`). Ning
 |---|---|
 | `DB_NAME`, `DB_USER`, `DB_PASS` | Base y usuario de la aplicación (los usa `app` y los crea `db`) |
 | `MYSQL_ROOT_PASSWORD` | Clave del usuario root de MySQL |
-| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | Credenciales de una app de PayPal Developer (opcionales; sin ellas el pago con tarjeta queda desactivado y el pedido queda pendiente) |
-| `PAYPAL_ENV`, `PAYPAL_COP_PER_USD` | `sandbox` o `live`; pesos por dólar para convertir el total (PayPal no cobra en COP) |
-| `PAYPAL_TASA_AUTO` | `1` (por defecto): la tasa COP/USD se consulta a open.er-api.com y se guarda 6 horas; `0` usa siempre `PAYPAL_COP_PER_USD` |
+| `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET` | Llaves de Wompi (opcionales; sin ellas el pago en línea queda desactivado y el pedido queda pendiente) |
+| `WOMPI_EVENTS_SECRET`, `APP_URL` | Secreto de eventos (valida el webhook) y dirección pública de la tienda (opcionales) |
 | `CSP_MODO` | Política de seguridad de contenido: `enforce` (por defecto), `report` (solo avisa en la consola del navegador) u `off` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Correo de confirmación de pedidos (opcional; sin `SMTP_HOST` no se envía nada) |
 | `WEB_PORT`, `PMA_PORT` | Puertos publicados en tu equipo (por defecto 8080 y 8081) |
@@ -95,6 +94,13 @@ docker compose down -v             # borrar también los volúmenes (empieza de 
 - **Migraciones:** `database/migrations/NNN_nombre.php` cambian el esquema de una base que ya existe. `docker/migrar.php` las aplica en orden al arrancar `app` (local y Railway) y registra cuáles corrieron en `schema_migrations`; una base nueva ejecuta el seed y luego las migraciones. Para un cambio nuevo, agrega el siguiente número; nunca edites una migración ya aplicada.
 - **Copias:** `.\scripts\backup.ps1` genera `backups/tienda-FECHA.sql` desde el contenedor local; el administrador también puede descargar una copia desde *Mi cuenta → Copia de seguridad* (funciona igual en Railway). Para restaurar: `Get-Content backups\ARCHIVO.sql -Raw | docker compose exec -T db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'`.
 - **Verificación antes de desplegar:** `.\scripts\verificar.ps1` construye las dos imágenes (local y Railway, desde el mismo código), levanta el entorno y comprueba salud, sintaxis PHP, páginas, CSP y CSRF.
+
+## Pedidos y ventas en tienda
+
+- Un pedido web nace **pendiente** y reserva el stock. Si el cliente nunca paga, el administrador lo **cancela** desde *Pedidos* (queda en el historial como «Cancelado» y el stock vuelve a la tienda; no se descuenta dos veces aunque se pulse dos veces). Un pedido cancelado no se reabre.
+- **Vencimiento automático:** un pedido de pago en línea que no se paga en **30 minutos** (`PEDIDO_EXPIRA_MIN`, mínimo 5) se cancela solo y devuelve el stock. Los pedidos en efectivo no vencen. Como la aplicación no guarda estado ni usa tareas programadas, el barrido corre durante las peticiones, como máximo una vez por minuto. Si el cliente paga justo después de vencer, Wompi aprueba el pago y la tienda reserva de nuevo el stock y deja el pedido pagado; si ya no hay stock queda cancelado, con un error en los logs para devolver el dinero.
+- Las **ventas presenciales** se registran en *Venta en tienda*: se eligen productos y cantidades, la forma de pago (efectivo, datáfono, transferencia/Nequi) y, opcionalmente, el nombre del cliente. La venta queda **completada** al instante, descuenta el stock y cuenta en las ventas del panel; en *Pedidos* aparece con la etiqueta «En tienda».
+- Todo queda en *Actividad* (auditoría).
 
 ## Seguridad
 
@@ -138,4 +144,4 @@ La tienda también se despliega en Railway con una imagen propia (`docker/railwa
 
 ## Deuda técnica pendiente
 
-Lo que queda abierto de forma consciente: no hay recuperación de contraseña por correo ni verificación del correo al registrarse; los correos de pedido se envían por SMTP simple (sin cola de reintentos); el listado del panel se actualiza por sondeo cada 8 s y no por WebSockets; no hay pruebas automatizadas de PHP (solo `scripts/verificar.ps1` y `evidencias/`). Ya resueltos: consultas con parámetros, pago de PayPal en el servidor con monto congelado, CSRF, límite de intentos de login, migraciones, copias, auditoría, paginación y pedidos con tabla de ítems.
+Lo que queda abierto de forma consciente: no hay recuperación de contraseña por correo ni verificación del correo al registrarse; los correos de pedido se envían por SMTP simple (sin cola de reintentos); el listado del panel se actualiza por sondeo cada 8 s y no por WebSockets; no hay pruebas automatizadas de PHP (solo `scripts/verificar.ps1` y `evidencias/`). Ya resueltos: consultas con parámetros, pago con Wompi confirmado en el servidor, CSRF, límite de intentos de login, migraciones, copias, auditoría, paginación y pedidos con tabla de ítems.

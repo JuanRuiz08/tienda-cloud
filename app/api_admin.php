@@ -20,6 +20,7 @@ $estado = consulta($conn, "SELECT
          (SELECT COUNT(*) FROM `orders`),
          (SELECT COALESCE(MAX(id), 0) FROM `orders`),
          (SELECT COALESCE(SUM(payment_status = 'completed'), 0) FROM `orders`),
+         (SELECT COALESCE(SUM(payment_status = 'cancelled'), 0) FROM `orders`),
          (SELECT COALESCE(SUM(total_price), 0) FROM `orders`),
          (SELECT COUNT(*) FROM `products`),
          (SELECT COALESCE(SUM(stock), 0) FROM `products`),

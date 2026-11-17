@@ -3,7 +3,7 @@ require_once __DIR__ . '/includes/app.php';
 
 $user_id = requerir_usuario();
 
-$pedidos = consulta($conn, 'SELECT * FROM `orders` WHERE user_id = ? ORDER BY id DESC', 'i', [$user_id]);
+$pedidos = consulta($conn, 'SELECT *, ' . sql_segundos_para_pagar() . ' AS segundos_para_pagar FROM `orders` WHERE user_id = ? ORDER BY id DESC', 'i', [$user_id]);
 
 if (isset($_GET['pagado'])) {
    $message[] = '¡Pago recibido! Tu pedido quedó pagado.';
@@ -21,7 +21,7 @@ $detalles = [
    'Productos' => 'total_products',
 ];
 
-$estados = ['pending' => 'Pendiente', 'completed' => 'Completado'];
+$estados = ['pending' => 'Pendiente', 'completed' => 'Completado', 'cancelled' => 'Cancelado'];
 
 render_head('Mis Pedidos');
 include 'header.php';
@@ -53,7 +53,8 @@ render_encabezado('Mis pedidos', 'Pedidos');
          </dl>
          <div class="total">Total <strong><?= precio($pedido['total_price']) ?></strong></div>
          <?php if ($pedido['payment_status'] === 'pending' && $pedido['method'] === 'tarjeta'): ?>
-         <a href="pago-paypal.php?pedido=<?= (int) $pedido['id'] ?>" class="boton pagar-ahora">Pagar ahora</a>
+         <p class="vence-pago"><i class="fas fa-hourglass-half"></i> Paga en los próximos <?= max(1, (int) ceil($pedido['segundos_para_pagar'] / 60)) ?> min o el pedido se cancela solo.</p>
+         <a href="pago-wompi.php?pedido=<?= (int) $pedido['id'] ?>" class="boton pagar-ahora">Pagar ahora</a>
          <?php endif; ?>
       </article>
       <?php endforeach; ?>

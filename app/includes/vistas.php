@@ -128,11 +128,15 @@ function render_encabezado(string $titulo, string $pagina): void
 }
 
 /** Cierra una página de la tienda: pie de página, script y </html>. */
-function render_cierre(string $js = 'script.js', bool $con_pie = true): void
+function render_cierre(string $js = 'script.js', bool $con_pie = true, array $extra = []): void
 {
     if ($con_pie) {
         include __DIR__ . '/../footer.php';
     }
     echo '<script src="' . e(url_con_version('js/comun.js')) . "\"></script>\n";
-    echo '<script src="' . e(url_con_version("js/$js")) . "\"></script>\n\n</body>\n</html>\n";
+    echo '<script src="' . e(url_con_version("js/$js")) . "\"></script>\n";
+    foreach ($extra as $archivo) {
+        echo '<script src="' . e(url_con_version("js/$archivo")) . "\"></script>\n";
+    }
+    echo "\n</body>\n</html>\n";
 }

@@ -40,7 +40,7 @@ if (modal) {
 /* ---------- Actualización en vivo ----------
    Cada 8 s se consulta api_admin.php (un JSON diminuto con una "versión" de los datos y el contador de
    pendientes). Solo si la versión cambió, las zonas marcadas con data-vivo="nombre" se vuelven a pedir al
-   servidor y se reemplazan si cambió su contenido (un pedido nuevo o un pago de PayPal se ven sin recargar). */
+   servidor y se reemplazan si cambió su contenido (un pedido nuevo o un pago en línea se ven sin recargar). */
 const zonasVivas = document.querySelectorAll('[data-vivo]');
 const insigniaPendientes = document.querySelector('[data-pendientes]');
 let versionPanel = null;

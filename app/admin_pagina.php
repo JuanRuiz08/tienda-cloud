@@ -86,7 +86,7 @@ $ticket = $mes['pedidos'] ? intdiv($mes['total'], $mes['pedidos']) : 0;
 
 // ---------- Últimos pedidos ----------
 $recientes = consulta($conn, 'SELECT * FROM `orders` ORDER BY id DESC LIMIT 5');
-$estados = ['pending' => 'Pendiente', 'completed' => 'Completado'];
+$estados = ['pending' => 'Pendiente', 'completed' => 'Completado', 'cancelled' => 'Cancelado'];
 
 render_head('panel de administración', 'admin_style.css');
 include 'admin_header.php';
@@ -97,7 +97,8 @@ include 'admin_header.php';
    <h1 class="title">Panel</h1>
 
    <div class="rapidas" data-vivo="rapidas">
-      <a href="admin_productos.php#nuevo-producto" class="boton"><i class="fas fa-plus"></i> Añadir producto</a>
+      <a href="admin_venta.php" class="boton"><i class="fas fa-cash-register"></i> Registrar venta en tienda</a>
+      <a href="admin_productos.php#nuevo-producto" class="boton-opcion"><i class="fas fa-plus"></i> Añadir producto</a>
       <a href="admin_pedidos.php?estado=pending" class="boton-opcion"><i class="fas fa-clock"></i> Pedidos pendientes<?= $n_pendientes ? " ($n_pendientes)" : '' ?></a>
       <a href="inicio.php" target="_blank" rel="noopener" class="boton-opcion"><i class="fas fa-store"></i> Ver tienda</a>
    </div>

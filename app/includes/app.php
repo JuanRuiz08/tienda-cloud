@@ -10,8 +10,9 @@ require_once __DIR__ . '/csrf.php';
 require_once __DIR__ . '/seguridad.php';
 require_once __DIR__ . '/auditoria.php';
 require_once __DIR__ . '/tienda.php';
-require_once __DIR__ . '/tasa.php';
 require_once __DIR__ . '/correo.php';
+require_once __DIR__ . '/wompi.php';
 require_once __DIR__ . '/../conexion.php';
 
 csrf_exigir();
+expirar_pedidos_sin_pago($conn);

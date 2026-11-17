@@ -56,31 +56,33 @@ railway domain update <ID_DEL_DOMINIO> --domain papeleriaucp --service tienda
 |---|---|
 | `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME` | Referencias al servicio MySQL: `${{MySQL.MYSQLHOST}}`, `${{MySQL.MYSQLUSER}}`, `${{MySQL.MYSQLPASSWORD}}`, `${{MySQL.MYSQLDATABASE}}` |
 | `RAILWAY_DOCKERFILE_PATH` | `docker/railway/Dockerfile` |
-| `PAYPAL_CLIENT_ID` | Client ID de la app de PayPal Developer |
-| `PAYPAL_CLIENT_SECRET` | Secret de la misma app (no se sube a Git ni se muestra en pantalla) |
-| `PAYPAL_ENV` | `sandbox` (pruebas) o `live` (cobros reales) |
-| `PAYPAL_COP_PER_USD` | Tasa de respaldo (por defecto `4000`) si la consulta automática falla |
-| `PAYPAL_TASA_AUTO` | `1` (defecto) consulta la tasa real COP/USD cada 6 h; `0` usa siempre la fija |
-| `CSP_MODO` | `enforce` (defecto), `report` u `off`: si el botón de PayPal no cargara por la política de seguridad, pon `report` y avisa |
+| `WOMPI_PUBLIC_KEY` | Llave pública de Wompi (`pub_test_…` pruebas, `pub_prod_…` producción) |
+| `WOMPI_INTEGRITY_SECRET` | Secreto de integridad (no se sube a Git ni se muestra en pantalla) |
+| `WOMPI_EVENTS_SECRET` | Opcional: secreto de eventos para validar el webhook |
+| `APP_URL` | Opcional: `https://papeleriaucp.up.railway.app` (o el dominio propio) |
+| `CSP_MODO` | `enforce` (defecto), `report` u `off`: si el pago en línea fallara por la política de seguridad, pon `report` y avisa |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Opcionales: correo de confirmación de pedidos (Gmail: `smtp.gmail.com`, 587, clave de aplicación) |
 
-Sin las variables de PayPal la tienda funciona: el pago con tarjeta muestra "no disponible" y el pedido queda pendiente.
+Sin las variables de Wompi la tienda funciona: el pago en línea muestra "no disponible", el pedido queda pendiente y se puede pagar en efectivo.
 
-## Pago con PayPal
+## Pago en línea con Wompi
 
-1. En https://developer.paypal.com → *Apps & Credentials* → modo **Sandbox** → *Create App*. Copia *Client ID* y *Secret*.
-2. Guárdalos en Railway:
+Wompi (Bancolombia) cobra en pesos con tarjetas, PSE, Nequi y más.
+
+1. Crea la cuenta en https://comercios.wompi.co y entra al panel en modo **Pruebas**.
+2. En *Desarrolladores → Llaves* copia la **llave pública** (`pub_test_…`) y el **secreto de integridad**; en *Secretos para integración técnica* copia también el **secreto de eventos**.
+3. Guárdalos en Railway:
 
    ```bash
-   railway variable set PAYPAL_CLIENT_ID=... PAYPAL_ENV=sandbox --service tienda
-   railway variable set PAYPAL_CLIENT_SECRET=... --service tienda
+   railway variable set WOMPI_PUBLIC_KEY=pub_test_... APP_URL=https://papeleriaucp.up.railway.app --service tienda
+   railway variable set WOMPI_INTEGRITY_SECRET=... WOMPI_EVENTS_SECRET=... --service tienda
    ```
-3. Para probar usa una cuenta *Personal* de Sandbox (*Testing Tools → Sandbox Accounts*) al iniciar sesión en la ventana de PayPal.
+4. En *Desarrolladores → URL de eventos* pega `https://TU-DOMINIO/api_wompi.php` (así el pago se confirma aunque el cliente cierre la ventana).
+5. Para probar, usa las tarjetas y cuentas de prueba de la documentación de Wompi (docs.wompi.co → *Datos de prueba*): una tarjeta aprobada, una rechazada y PSE.
 
-**Cobros reales:** crea una app en modo **Live** en developer.paypal.com, pon `PAYPAL_ENV=live` y las credenciales Live (nunca en el chat ni en Git). El monto en dólares se calcula con la tasa del día y se **congela** en el pedido (`orders.usd_total`) al crear la orden; al capturar se exige exactamente ese monto.
+**Producción:** completa la verificación del comercio en Wompi, cambia a las llaves `pub_prod_…` / `prod_integrity_…` / `prod_events_…` y vuelve a pegar la URL de eventos en el panel de producción.
 
-Flujo: `pagar.php` crea el pedido (pendiente); con tarjeta lleva a `pago-paypal.php?pedido=ID`; el botón llama a `api_paypal.php`, que crea la orden con el total leído de la base de datos, captura el pago en PayPal y solo si PayPal confirma `COMPLETED` por el monto esperado marca el pedido como `completed`. Efectivo queda pendiente.
-
+Flujo: `pagar.php` crea el pedido (pendiente); con pago en línea lleva a `pago-wompi.php?pedido=ID`, que arma el enlace firmado (el monto sale de la base de datos) hacia el checkout de Wompi. Al volver, `pago-resultado.php` consulta la transacción a la API de Wompi, y el webhook `api_wompi.php` hace lo mismo; el pedido pasa a `completed` solo si Wompi confirma `APPROVED` por el monto exacto del pedido en COP. Efectivo queda pendiente.
 ## Migraciones y claves de demostración
 
 Cada despliegue aplica las migraciones pendientes al arrancar (`[migrar]` en los logs). Las cuentas de demostración del seed son solo para local: tras el primer despliegue, entra como administrador y cambia las claves en *Mi cuenta*.

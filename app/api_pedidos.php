@@ -13,6 +13,6 @@ if ($user_id === null) {
    exit();
 }
 
-$v = valor($conn, "SELECT CONCAT_WS('-', COUNT(*), COALESCE(MAX(id), 0), COALESCE(SUM(payment_status = 'completed'), 0))
+$v = valor($conn, "SELECT CONCAT_WS('-', COUNT(*), COALESCE(MAX(id), 0), COALESCE(SUM(payment_status = 'completed'), 0), COALESCE(SUM(payment_status = 'cancelled'), 0))
                    FROM `orders` WHERE user_id = ?", 'i', [$user_id]);
 echo json_encode(['version' => md5((string) $v)]);

@@ -557,10 +557,11 @@ img.sin-imagen { visibility: hidden; }
    color: var(--accent-ink);
 }
 .estado-completed { background: var(--ok-50); color: var(--ok); }
+.estado-cancelled { background: var(--danger-50); color: var(--danger); }
 
 .pedidos .caja .pagar-ahora { width: 100%; margin-top: 1rem; padding-block: .9rem; }
 
-/* ---------- Pago con PayPal ---------- */
+/* ---------- Pago en línea (Wompi) ---------- */
 .pago { display: grid; place-items: start center; padding-top: clamp(2rem, 6vw, 4rem); }
 .pago-tarjeta {
    width: min(520px, 100%);
@@ -586,9 +587,15 @@ img.sin-imagen { visibility: hidden; }
 }
 .pago-total span { font-size: 2.2rem; font-weight: 800; letter-spacing: -.03em; }
 .pago-total small { font-size: .82rem; color: var(--muted); }
-#paypal-button-container { min-height: 56px; }
-#pago-estado { margin-top: 1rem; min-height: 1.4rem; font-size: .92rem; font-weight: 600; color: var(--ink-2); }
-#pago-estado.error { color: var(--danger); }
+.vence-pago { margin: 0 0 1rem; padding: .7rem .9rem; background: var(--accent-50); border-radius: var(--r); color: var(--accent-ink); font-size: .85rem; line-height: 1.4; }
+.pedidos .caja .vence-pago { margin: 1rem 0 0; }
+.pagar-wompi { width: 100%; padding-block: 1rem; font-size: 1.05rem; }
+.modo-pruebas { margin: 1rem 0 0; }
+.resultado-icono { display: block; margin-bottom: 1rem; font-size: 3rem; }
+.resultado-ok .resultado-icono { color: var(--ok); }
+.resultado-espera .resultado-icono { color: var(--accent); }
+.resultado-error .resultado-icono { color: var(--danger); }
+.resultado-acciones { display: grid; gap: .7rem; margin-top: 1.6rem; }
 .pago-aviso { margin-bottom: 1.2rem; padding: 1rem; background: var(--accent-50); border-radius: var(--r); color: var(--accent-ink); font-size: .92rem; }
 .pago-nota { margin-top: 1.4rem; font-size: .8rem; color: var(--muted); }
 .pago-nota a { font-weight: 700; color: var(--brand); }

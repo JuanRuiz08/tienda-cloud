@@ -3,22 +3,20 @@
 
 /**
  * Política de contenido: solo se cargan scripts, estilos, fuentes e imágenes de este sitio y de los servicios
- * que usa (Google Fonts, Font Awesome y PayPal). Un script inyectado desde otro origen no se ejecuta.
+ * que usa (Google Fonts, Font Awesome). Un script inyectado desde otro origen no se ejecuta.
  * CSP_MODO: "enforce" (por defecto), "report" (solo registra en la consola del navegador) u "off".
  */
 function enviar_cabeceras_seguridad(): void
 {
     $modo = getenv('CSP_MODO') ?: 'enforce';
     if ($modo !== 'off') {
-        $paypal = 'https://*.paypal.com https://*.paypalobjects.com';
         $politica = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' $paypal",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com $paypal",
+            "script-src 'self'",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
-            "img-src 'self' data: $paypal",
-            "connect-src 'self' $paypal",
-            "frame-src https://*.paypal.com",
+            "img-src 'self' data:",
+            "connect-src 'self'",
             "form-action 'self'",
             "base-uri 'self'",
             "object-src 'none'",

@@ -26,6 +26,9 @@ function csrf_exigir(): void
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
         return;
     }
+    if (basename($_SERVER['SCRIPT_NAME'] ?? '') === 'api_wompi.php') {
+        return;   // webhook de Wompi: no trae sesión; api_wompi.php valida el evento y reconsulta la transacción a Wompi
+    }
     iniciar_sesion();
     $enviado = (string) ($_POST['csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
     $esperado = (string) ($_SESSION['csrf'] ?? '');

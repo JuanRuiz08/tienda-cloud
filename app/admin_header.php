@@ -11,6 +11,7 @@ $menu = [
    ['admin_pagina.php', 'fa-chart-pie', 'Panel', null],
    ['admin_productos.php', 'fa-boxes', 'Productos', null],
    ['admin_pedidos.php', 'fa-receipt', 'Pedidos', $pendientes],
+   ['admin_venta.php', 'fa-cash-register', 'Venta en tienda', null],
    ['admin_usuarios.php', 'fa-users', 'Usuarios', null],
    ['admin_actividad.php', 'fa-history', 'Actividad', null],
    ['cuenta.php', 'fa-user-cog', 'Mi cuenta', null],
