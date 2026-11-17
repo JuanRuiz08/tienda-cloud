@@ -4,6 +4,8 @@ require_once __DIR__ . '/includes/app.php';
 requerir_admin();
 
 if (isset($_GET['delete'])) {
+   // Al borrar una cuenta también se vacía su carrito, para no dejar filas huérfanas.
+   consulta($conn, 'DELETE FROM `cart` WHERE user_id = ?', 'i', [(int) $_GET['delete']]);
    consulta($conn, 'DELETE FROM `users` WHERE id = ?', 'i', [(int) $_GET['delete']]);
    redirigir('admin_usuarios.php');
 }

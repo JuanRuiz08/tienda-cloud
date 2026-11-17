@@ -51,7 +51,7 @@ render_encabezado('Mis pedidos', 'Pedidos');
             <dd><?= e($pedido[$campo]) ?></dd>
             <?php endforeach; ?>
          </dl>
-         <div class="total">Total <strong>$<?= e($pedido['total_price']) ?> Mil</strong></div>
+         <div class="total">Total <strong><?= precio($pedido['total_price']) ?></strong></div>
          <?php if ($pedido['payment_status'] === 'pending' && $pedido['method'] === 'tarjeta'): ?>
          <a href="pago-paypal.php?pedido=<?= (int) $pedido['id'] ?>" class="boton pagar-ahora">Pagar ahora</a>
          <?php endif; ?>

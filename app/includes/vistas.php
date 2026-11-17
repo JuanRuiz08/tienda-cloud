@@ -7,6 +7,12 @@ function e(mixed $valor): string
     return htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
 }
 
+/** Precio en pesos con separador de miles: 10000 → "$10.000". */
+function precio(int|string|float $pesos): string
+{
+    return '$' . number_format((int) $pesos, 0, ',', '.');
+}
+
 /** Agrega ?v=<fecha del archivo> para que el navegador recargue CSS/JS cuando cambian (nginx los cachea 7 días). */
 function url_con_version(string $ruta): string
 {

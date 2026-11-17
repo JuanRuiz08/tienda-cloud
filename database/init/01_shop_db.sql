@@ -208,16 +208,16 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `price`, `image`, `category`, `stock`, `description`) VALUES
-(44, 'Ancheta ', 40, 'ancheta 1.jpg', 'dulceria', 2, 'Regalo para un cumpleaños.'),
-(45, 'Termo verde ', 20, 'Termo.jpg', 'uso personal', 3, 'termo de acero inoxidable de color verde, ideal para mantener tus bebidas a la temperatura deseada p'),
-(46, 'Pañitos Humedo', 15, 'pañitos p.jpg', 'uso personal', 5, 'toallitas húmedas para bebés de la marca Pequeñin'),
-(47, 'Cuaderno', 5, 'Cuaderno 3.jpg', 'escolar', 3, 'cuardeno negro'),
-(48, 'Galletas tosh', 1, 'galletas tosh.jpg', 'dulceria', 8, 'galletas integrales de avena'),
-(49, 'Billetera ', 5, 'Billeteras-para-hombre-45650016-79807_2.jpg', 'uso personal', 6, 'billetera de cuero negra para hombres'),
-(50, 'Bolso', 30, 'Mochila t60.png', 'escolar', 5, 'mochila o bolso para estudiantes'),
-(51, 'Perfume', 50, 'humor.jpg', 'uso personal', 9, 'perfume de marca humor para hombres'),
-(53, 'Lapicero', 1, 'lapicero.jpg', 'escolar', 8, 'Lapicero de tinta negra'),
-(54, 'Ancheta f', 30, 'ancheta 2.jpg', 'dulceria', 6, 'ancheta para ocasión especiales');
+(44, 'Ancheta ', 40000, 'ancheta 1.jpg', 'dulceria', 2, 'Regalo para un cumpleaños.'),
+(45, 'Termo verde ', 20000, 'Termo.jpg', 'uso personal', 3, 'termo de acero inoxidable de color verde, ideal para mantener tus bebidas a la temperatura deseada p'),
+(46, 'Pañitos Humedo', 15000, 'pañitos p.jpg', 'uso personal', 5, 'toallitas húmedas para bebés de la marca Pequeñin'),
+(47, 'Cuaderno', 5000, 'Cuaderno 3.jpg', 'escolar', 3, 'cuardeno negro'),
+(48, 'Galletas tosh', 1000, 'galletas tosh.jpg', 'dulceria', 8, 'galletas integrales de avena'),
+(49, 'Billetera ', 5000, 'Billeteras-para-hombre-45650016-79807_2.jpg', 'uso personal', 6, 'billetera de cuero negra para hombres'),
+(50, 'Bolso', 30000, 'Mochila t60.png', 'escolar', 5, 'mochila o bolso para estudiantes'),
+(51, 'Perfume', 50000, 'humor.jpg', 'uso personal', 9, 'perfume de marca humor para hombres'),
+(53, 'Lapicero', 1000, 'lapicero.jpg', 'escolar', 8, 'Lapicero de tinta negra'),
+(54, 'Ancheta f', 30000, 'ancheta 2.jpg', 'dulceria', 6, 'ancheta para ocasión especiales');
 
 -- --------------------------------------------------------
 

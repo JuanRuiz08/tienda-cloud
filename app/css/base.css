@@ -151,6 +151,9 @@ h1, h2, h3 { line-height: 1.15; letter-spacing: -.02em; font-weight: 800; }
 }
 .boton-blanco:hover { background: var(--accent); transform: translateY(-1px); }
 
+.boton:disabled,
+.option-btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+
 .boton.disabled,
 .disabled { pointer-events: none; opacity: .45; user-select: none; }
 

@@ -24,7 +24,7 @@ render_encabezado('Pago', 'Pago');
       <p class="pago-productos"><?= e($pedido['total_products']) ?></p>
 
       <div class="pago-total">
-         <span>$<?= e($pedido['total_price']) ?> Mil</span>
+         <span><?= precio($pedido['total_price']) ?></span>
          <small>PayPal lo cobra como USD <?= e($usd) ?></small>
       </div>
 

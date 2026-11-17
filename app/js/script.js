@@ -137,7 +137,7 @@ function mostrarResultados(productos, q) {
 
       const precio = document.createElement('span');
       precio.className = 'precio';
-      precio.textContent = `$${p.price} Mil`;
+      precio.textContent = '$' + String(p.price).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
       a.append(img, nombre, precio);
       lista.append(a);
@@ -186,6 +186,41 @@ entrada.addEventListener('keydown', (e) => {
    activo = (activo + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
    items.forEach((el, i) => el.classList.toggle('activo', i === activo));
 });
+
+/* ---------- Stock en vivo: el catálogo refleja las compras sin recargar ---------- */
+const tarjetasStock = document.querySelectorAll('.show-products .caja[id^="producto-"]');
+
+if (tarjetasStock.length) {
+   const aplicarStock = (mapa) => tarjetasStock.forEach((tarjeta) => {
+      const stock = mapa[tarjeta.id.replace('producto-', '')];
+      if (stock === undefined) return;
+
+      const etiqueta = tarjeta.querySelector('.stock');
+      const cantidad = tarjeta.querySelector('.qty');
+      const boton = tarjeta.querySelector('input[type="submit"]');
+
+      etiqueta.textContent = stock === 0 ? 'Agotado' : `Stock: ${stock}`;
+      etiqueta.classList.toggle('agotado', stock === 0);
+      etiqueta.classList.toggle('bajo', stock > 0 && stock <= 3);
+
+      if (cantidad) {
+         cantidad.disabled = stock === 0;
+         cantidad.max = Math.max(stock, 1);
+         if (Number(cantidad.value) > cantidad.max) cantidad.value = cantidad.max;
+      }
+      if (boton && !boton.classList.contains('cargando')) {
+         boton.disabled = stock === 0;
+         boton.value = stock === 0 ? 'Agotado' : 'Añadir';
+      }
+   });
+
+   const consultarStock = () => {
+      if (document.hidden) return;
+      fetch('api_stock.php', { cache: 'no-store' }).then((r) => r.json()).then(aplicarStock).catch(() => {});
+   };
+   setInterval(consultarStock, 8000);
+   document.addEventListener('visibilitychange', consultarStock);
+}
 
 /* ---------- Aparición suave al entrar en pantalla ---------- */
 const objetivos = document.querySelectorAll(

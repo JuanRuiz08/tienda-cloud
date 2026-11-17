@@ -21,17 +21,31 @@ if (isset($_POST['order_btn']) && $total > 0) {
 
    $metodo = in_array($f['method'], ['efectivo', 'tarjeta'], true) ? $f['method'] : 'efectivo';
 
-   consulta($conn,
-      'INSERT INTO `orders`(user_id, name, number, email, method, address, total_products, total_price, placed_on)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      'issssssis',
-      [$user_id, $f['name'], $f['number'], $f['email'], $metodo, $direccion, $resumen_productos, $total, $fecha]);
-   $pedido_id = (int) valor($conn, 'SELECT LAST_INSERT_ID()');
-   consulta($conn, 'DELETE FROM `cart` WHERE user_id = ?', 'i', [$user_id]);
-   app_log('info', "pedido $pedido_id creado user_id=$user_id total=$total método=$metodo");
+   // Todo o nada: descontar el stock, crear el pedido y vaciar el carrito van en una sola transacción.
+   $conn->begin_transaction();
+   try {
+      $aviso = reservar_stock($conn, $items);
+      if ($aviso !== null) {
+         $conn->rollback();
+         $message[] = $aviso;
+      } else {
+         consulta($conn,
+            'INSERT INTO `orders`(user_id, name, number, email, method, address, total_products, total_price, placed_on)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'issssssis',
+            [$user_id, $f['name'], $f['number'], $f['email'], $metodo, $direccion, $resumen_productos, $total, $fecha]);
+         $pedido_id = (int) valor($conn, 'SELECT LAST_INSERT_ID()');
+         consulta($conn, 'DELETE FROM `cart` WHERE user_id = ?', 'i', [$user_id]);
+         $conn->commit();
+         app_log('info', "pedido $pedido_id creado user_id=$user_id total=$total método=$metodo");
 
-   // Tarjeta: se paga ahora con PayPal. Efectivo: queda pendiente y se paga al recibir el pedido.
-   redirigir($metodo === 'tarjeta' ? "pago-paypal.php?pedido=$pedido_id" : "pedidos.php?nuevo=$pedido_id");
+         // Tarjeta: se paga ahora con PayPal. Efectivo: queda pendiente y se paga al recibir el pedido.
+         redirigir($metodo === 'tarjeta' ? "pago-paypal.php?pedido=$pedido_id" : "pedidos.php?nuevo=$pedido_id");
+      }
+   } catch (Throwable $e) {
+      $conn->rollback();
+      throw $e;
+   }
 }
 
 render_head('Verificación de compra');
@@ -48,10 +62,10 @@ render_encabezado('Verificación', 'Verificación');
    <?php endif; ?>
 
    <?php foreach ($items as $item): ?>
-   <p><?= e($item['name']) ?> <span>$<?= e($item['price']) ?> Mil × <?= (int) $item['quantity'] ?></span></p>
+   <p><?= e($item['name']) ?> <span><?= precio($item['price']) ?> × <?= (int) $item['quantity'] ?></span></p>
    <?php endforeach; ?>
 
-   <div class="grand-total">Total general <span>$<?= $total ?> Mil</span></div>
+   <div class="grand-total">Total general <span><?= precio($total) ?></span></div>
 </section>
 
 <section class="checkout">

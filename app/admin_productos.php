@@ -96,7 +96,7 @@ render_head('Productos', 'admin_style.css');
 include 'admin_header.php';
 ?>
 
-<section class="add-products">
+<section class="add-products" id="nuevo-producto">
 
    <h1 class="title">Productos de la tienda</h1>
 
@@ -104,7 +104,7 @@ include 'admin_header.php';
       <h3>Añadir producto</h3>
       <input type="text" name="name" class="caja" placeholder="Ingrese el nombre del producto" required>
       <input type="text" name="description" class="caja" placeholder="Ingrese la descripcion del producto" required>
-      <input type="number" min="0" name="price" class="caja" placeholder="Ingrese el precio del producto" required>
+      <input type="number" min="0" name="price" class="caja" placeholder="Precio en pesos (ej. 10000)" required>
       <input type="file" name="image" accept="image/jpg, image/jpeg, image/png" class="caja" required>
       <input type="number" min="0" name="stock" class="caja" placeholder="Ingrese el stock del producto" required>
       <select name="category" class="caja" required>
@@ -123,10 +123,10 @@ include 'admin_header.php';
          <?php endif; ?>
 
          <?php foreach ($productos as $producto): ?>
-         <div class="caja">
+         <div class="caja" id="producto-<?= (int) $producto['id'] ?>">
             <img src="uploaded_img/<?= e($producto['image']) ?>" alt="" class="image">
             <div class="name"><?= e($producto['name']) ?></div>
-            <div class="price">$<?= e($producto['price']) ?> Mil</div>
+            <div class="price"><?= precio($producto['price']) ?></div>
             <div class="stock">Stock: <?= e($producto['stock']) ?></div>
             <a href="admin_productos.php?update=<?= (int) $producto['id'] ?>" class="boton-opcion">Actualizar</a>
             <a href="admin_productos.php?delete=<?= (int) $producto['id'] ?>" class="boton-eliminar" onclick="return confirm('¿Eliminar este producto?');">Eliminar</a>
@@ -143,7 +143,7 @@ include 'admin_header.php';
          <img src="uploaded_img/<?= e($en_edicion['image']) ?>" alt="">
          <h3>Editar producto</h3>
          <label class="campo"><span>Nombre</span><input type="text" name="update_name" value="<?= e($en_edicion['name']) ?>" class="caja" required></label>
-         <label class="campo"><span>Precio (en miles)</span><input type="number" name="update_price" value="<?= e($en_edicion['price']) ?>" min="0" class="caja" required></label>
+         <label class="campo"><span>Precio (en pesos)</span><input type="number" name="update_price" value="<?= e($en_edicion['price']) ?>" min="0" class="caja" required></label>
          <label class="campo"><span>Stock</span><input type="number" name="update_stock" value="<?= e($en_edicion['stock']) ?>" min="0" class="caja" required></label>
          <label class="campo"><span>Nueva imagen (opcional)</span><input type="file" name="update_image" accept="image/jpg, image/jpeg, image/png" class="caja"></label>
          <input type="submit" value="Actualizar producto" name="update_product" class="boton">
