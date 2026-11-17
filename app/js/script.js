@@ -222,6 +222,22 @@ if (tarjetasStock.length) {
    document.addEventListener('visibilitychange', consultarStock);
 }
 
+/* ---------- Mis pedidos en vivo: el estado cambia solo cuando el admin o PayPal lo actualizan ---------- */
+const zonaPedidos = document.querySelector('.pedidos [data-vivo="pedidos"]');
+
+if (zonaPedidos) {
+   const refrescarPedidos = async () => {
+      if (document.hidden) return;
+      try {
+         const html = await (await fetch(location.pathname, { cache: 'no-store', credentials: 'same-origin' })).text();
+         const nueva = new DOMParser().parseFromString(html, 'text/html').querySelector('.pedidos [data-vivo="pedidos"]');
+         if (nueva && nueva.innerHTML !== zonaPedidos.innerHTML) zonaPedidos.innerHTML = nueva.innerHTML;
+      } catch (e) { /* se reintenta en el próximo ciclo */ }
+   };
+   setInterval(refrescarPedidos, 8000);
+   document.addEventListener('visibilitychange', refrescarPedidos);
+}
+
 /* ---------- Aparición suave al entrar en pantalla ---------- */
 const objetivos = document.querySelectorAll(
    '.show-products .caja-container .caja, .carrito-de-compras .caja-container .caja, .pedidos .caja,' +

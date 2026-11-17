@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/app.php';
+require_once __DIR__ . '/includes/acceso.php';
 
 if (isset($_POST['submit'])) {
    $name = trim($_POST['name']);
@@ -23,22 +24,20 @@ if (isset($_POST['submit'])) {
 
 render_head('Registro');
 render_mensajes($message ?? []);
+
+acceso_abrir('Crea tu cuenta', 'Regístrate para pedir desde el campus.');
 ?>
+         <form action="" method="post">
+<?php
+acceso_campo('text', 'name', 'Nombre', 'fa-user', 'name', $name ?? '');
+acceso_campo('email', 'email', 'Correo electrónico', 'fa-envelope', 'email', $email ?? '');
+acceso_campo('password', 'password', 'Contraseña', 'fa-lock', 'new-password');
+acceso_campo('password', 'cpassword', 'Confirma tu contraseña', 'fa-lock', 'new-password');
+?>
+            <input type="submit" name="submit" value="Crear cuenta" class="boton">
+         </form>
 
-<div class="form-container">
-
-   <form action="" method="post">
-      <div class="marca">papelería U.C.P.</div>
-      <h3>Crea tu cuenta</h3>
-      <input type="text" name="name" placeholder="Nombre" autocomplete="name" required class="caja">
-      <input type="email" name="email" placeholder="Correo electrónico" autocomplete="email" required class="caja">
-      <input type="password" name="password" placeholder="Contraseña" autocomplete="new-password" required class="caja">
-      <input type="password" name="cpassword" placeholder="Confirma tu contraseña" autocomplete="new-password" required class="caja">
-      <input type="submit" name="submit" value="Registrarme" class="boton">
-      <p>¿Ya tienes una cuenta? <a href="login.php">Inicia sesión</a></p>
-   </form>
-
-</div>
-
-</body>
-</html>
+         <p class="cambio">¿Ya tienes una cuenta? <a href="login.php">Inicia sesión</a></p>
+<?php
+acceso_cerrar();
+render_cierre('acceso.js', false);

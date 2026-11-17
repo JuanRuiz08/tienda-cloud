@@ -31,7 +31,7 @@ render_encabezado('Mis pedidos', 'Pedidos');
 
 <section class="pedidos">
 
-   <div class="caja-container">
+   <div class="caja-container" data-vivo="pedidos">
       <?php if (!$pedidos): ?>
          <p class="vacio">No has realizado pedidos aún. <a href="tienda.php"><strong>Ir a la tienda</strong></a></p>
       <?php endif; ?>

@@ -92,13 +92,13 @@ include 'admin_header.php';
 
    <h1 class="title">Panel</h1>
 
-   <div class="rapidas">
+   <div class="rapidas" data-vivo="rapidas">
       <a href="admin_productos.php#nuevo-producto" class="boton"><i class="fas fa-plus"></i> Añadir producto</a>
       <a href="admin_pedidos.php?estado=pending" class="boton-opcion"><i class="fas fa-clock"></i> Pedidos pendientes<?= $n_pendientes ? " ($n_pendientes)" : '' ?></a>
       <a href="inicio.php" target="_blank" rel="noopener" class="boton-opcion"><i class="fas fa-store"></i> Ver tienda</a>
    </div>
 
-   <div class="caja-container">
+   <div class="caja-container" data-vivo="resumen">
       <?php foreach ($tarjetas as [$cifra, $etiqueta]): ?>
       <div class="caja">
          <h3><?= e($cifra) ?></h3>
@@ -107,7 +107,7 @@ include 'admin_header.php';
       <?php endforeach; ?>
    </div>
 
-   <div class="panel-grid">
+   <div class="panel-grid" data-vivo="panel">
 
       <!-- Ventas de los últimos 7 días -->
       <div class="panel-card">
@@ -177,7 +177,7 @@ include 'admin_header.php';
    </div>
 
    <!-- Últimos pedidos -->
-   <div class="panel-card recientes">
+   <div class="panel-card recientes" data-vivo="recientes">
       <div class="cabecera-card">
          <div>
             <h2>Últimos pedidos</h2>

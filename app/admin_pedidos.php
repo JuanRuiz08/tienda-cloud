@@ -50,7 +50,7 @@ include 'admin_header.php';
 
    <h1 class="title">pedidos realizados</h1>
 
-   <nav class="filtros" aria-label="Filtrar por estado">
+   <nav class="filtros" aria-label="Filtrar por estado" data-vivo="filtros">
       <?php foreach ($pestanas as $clave => $texto): ?>
       <a href="admin_pedidos.php<?= $clave === 'todos' ? '' : '?estado=' . $clave ?>" class="<?= $filtro === $clave ? 'activo' : '' ?>">
          <?= $texto ?> <span data-total="<?= $clave ?>"><?= $totales[$clave] ?></span>
@@ -58,7 +58,7 @@ include 'admin_header.php';
       <?php endforeach; ?>
    </nav>
 
-   <div class="caja-container" data-vivo>
+   <div class="caja-container" data-vivo="pedidos">
       <?php if (!$pedidos): ?>
          <p class="empty">¡No hay pedidos <?= $filtro === 'todos' ? 'realizados todavía' : 'en este estado' ?>!</p>
       <?php endif; ?>

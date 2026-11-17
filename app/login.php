@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/app.php';
 require_once __DIR__ . '/includes/autenticacion.php';
+require_once __DIR__ . '/includes/acceso.php';
 
 iniciar_sesion();
 
@@ -21,20 +22,18 @@ if (isset($_POST['submit'])) {
 
 render_head('iniciar sesión');
 render_mensajes($message ?? []);
+
+acceso_abrir('Bienvenido de nuevo', 'Inicia sesión para hacer tus pedidos.');
 ?>
+         <form action="" method="post">
+<?php
+acceso_campo('email', 'email', 'Correo electrónico', 'fa-envelope', 'email', $email ?? '');
+acceso_campo('password', 'password', 'Contraseña', 'fa-lock', 'current-password');
+?>
+            <input type="submit" name="submit" value="Iniciar sesión" class="boton">
+         </form>
 
-<div class="form-container">
-
-   <form action="" method="post">
-      <div class="marca">papelería U.C.P.</div>
-      <h3>Inicia sesión</h3>
-      <input type="email" name="email" placeholder="Correo electrónico" autocomplete="email" required class="caja">
-      <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required class="caja">
-      <input type="submit" name="submit" value="Iniciar sesión" class="boton">
-      <p>¿No tienes una cuenta? <a href="registro.php">Regístrate</a></p>
-   </form>
-
-</div>
-
-</body>
-</html>
+         <p class="cambio">¿No tienes una cuenta? <a href="registro.php">Regístrate</a></p>
+<?php
+acceso_cerrar();
+render_cierre('acceso.js', false);

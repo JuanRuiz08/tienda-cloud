@@ -45,34 +45,47 @@ if (modal) {
    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrar(); });
 }
 
-/* ---------- Pedidos en vivo: un pago nuevo (p. ej. PayPal) cambia la tarjeta sin recargar ---------- */
-const listaPedidos = document.querySelector('.pedidos .caja-container[data-vivo]');
+/* ---------- Actualización en vivo ----------
+   Cada zona marcada con data-vivo="nombre" se vuelve a pedir al servidor cada pocos segundos y solo se
+   reemplaza si cambió (así un pedido nuevo o un pago de PayPal se ven sin recargar). */
+const zonasVivas = document.querySelectorAll('[data-vivo]');
 
-if (listaPedidos) {
-   const refrescarPedidos = async () => {
-      // No se pisa la lista si el admin está eligiendo un estado en ese momento.
-      if (document.hidden || listaPedidos.contains(document.activeElement)) return;
+if (zonasVivas.length) {
+   const refrescarZonas = async () => {
+      if (document.hidden) return;
       try {
          const html = await (await fetch(location.href, { cache: 'no-store', credentials: 'same-origin' })).text();
          const doc = new DOMParser().parseFromString(html, 'text/html');
-         const nueva = doc.querySelector('.pedidos .caja-container');
-         if (nueva && nueva.innerHTML !== listaPedidos.innerHTML) listaPedidos.innerHTML = nueva.innerHTML;
-         const insignia = doc.querySelector('[data-pendientes]');
-         const insigniaActual = document.querySelector('[data-pendientes]');
-         if (insignia && insigniaActual) {
-            insigniaActual.textContent = insignia.textContent;
-            insigniaActual.classList.toggle('cero', insignia.classList.contains('cero'));
-         }
-         doc.querySelectorAll('.filtros [data-total]').forEach((n) => {
-            const actual = document.querySelector(`.filtros [data-total="${n.dataset.total}"]`);
-            if (actual) actual.textContent = n.textContent;
+         zonasVivas.forEach((zona) => {
+            // No se pisa una zona mientras el admin está usando un control dentro de ella.
+            if (zona !== document.body && zona.contains(document.activeElement) && document.activeElement !== document.body) return;
+            const nueva = doc.querySelector(`[data-vivo="${zona.dataset.vivo}"]`);
+            if (nueva && nueva.innerHTML !== zona.innerHTML) zona.innerHTML = nueva.innerHTML;
          });
       } catch (e) { /* sin red: se reintenta en el próximo ciclo */ }
    };
-   setInterval(refrescarPedidos, 8000);
-   document.addEventListener('visibilitychange', refrescarPedidos);
+   setInterval(refrescarZonas, 8000);
+   document.addEventListener('visibilitychange', refrescarZonas);
 }
 
+/* ---------- Contador de pendientes del menú (en todas las páginas del panel) ---------- */
+const insigniaPendientes = document.querySelector('[data-pendientes]');
+
+if (insigniaPendientes) {
+   const consultarPendientes = () => {
+      if (document.hidden) return;
+      fetch('api_admin.php', { cache: 'no-store' })
+         .then((r) => (r.ok ? r.json() : null))
+         .then((datos) => {
+            if (!datos) return;
+            insigniaPendientes.textContent = datos.pendientes;
+            insigniaPendientes.classList.toggle('cero', datos.pendientes === 0);
+         })
+         .catch(() => {});
+   };
+   setInterval(consultarPendientes, 8000);
+   document.addEventListener('visibilitychange', consultarPendientes);
+}
 /* ---------- Stock en vivo en la lista de productos ---------- */
 const tarjetasProducto = document.querySelectorAll('.show-products .caja[id^="producto-"]');
 
