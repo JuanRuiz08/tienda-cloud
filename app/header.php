@@ -52,13 +52,14 @@ $cantidad_carrito = $user_id ? (int) valor($conn, 'SELECT COUNT(*) FROM `cart` W
          <div class="usuario-caja">
             <p>nombre de usuario : <span><?= e($_SESSION['user_name'] ?? '') ?></span></p>
             <p>correo electrónico : <span><?= e($_SESSION['user_email'] ?? '') ?></span></p>
+            <a href="cuenta.php" class="boton-opcion">Mi cuenta</a>
             <a href="cerrar_sesion.php" class="boton-eliminar">cerrar sesión</a>
          </div>
          <?php endif; ?>
 
       <!-- Buscador desplegable con vista previa (js/script.js + api_busqueda.php) -->
       <div class="buscador" id="buscador" aria-hidden="true">
-         <form action="buscar_pagina.php" method="post" class="buscador-form" role="search">
+         <form action="buscar_pagina.php" method="get" class="buscador-form" role="search">
             <i class="fas fa-search"></i>
             <input type="search" name="search" id="buscador-input" placeholder="Buscar productos…" autocomplete="off" aria-label="Buscar productos">
             <button type="button" class="buscador-cerrar" aria-label="Cerrar búsqueda"><i class="fas fa-times"></i></button>

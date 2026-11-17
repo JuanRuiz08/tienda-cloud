@@ -59,7 +59,10 @@ railway domain update <ID_DEL_DOMINIO> --domain papeleriaucp --service tienda
 | `PAYPAL_CLIENT_ID` | Client ID de la app de PayPal Developer |
 | `PAYPAL_CLIENT_SECRET` | Secret de la misma app (no se sube a Git ni se muestra en pantalla) |
 | `PAYPAL_ENV` | `sandbox` (pruebas) o `live` (cobros reales) |
-| `PAYPAL_COP_PER_USD` | Pesos por dólar para convertir el total (por defecto `4000`) |
+| `PAYPAL_COP_PER_USD` | Tasa de respaldo (por defecto `4000`) si la consulta automática falla |
+| `PAYPAL_TASA_AUTO` | `1` (defecto) consulta la tasa real COP/USD cada 6 h; `0` usa siempre la fija |
+| `CSP_MODO` | `enforce` (defecto), `report` u `off`: si el botón de PayPal no cargara por la política de seguridad, pon `report` y avisa |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Opcionales: correo de confirmación de pedidos (Gmail: `smtp.gmail.com`, 587, clave de aplicación) |
 
 Sin las variables de PayPal la tienda funciona: el pago con tarjeta muestra "no disponible" y el pedido queda pendiente.
 
@@ -74,7 +77,13 @@ Sin las variables de PayPal la tienda funciona: el pago con tarjeta muestra "no 
    ```
 3. Para probar usa una cuenta *Personal* de Sandbox (*Testing Tools → Sandbox Accounts*) al iniciar sesión en la ventana de PayPal.
 
+**Cobros reales:** crea una app en modo **Live** en developer.paypal.com, pon `PAYPAL_ENV=live` y las credenciales Live (nunca en el chat ni en Git). El monto en dólares se calcula con la tasa del día y se **congela** en el pedido (`orders.usd_total`) al crear la orden; al capturar se exige exactamente ese monto.
+
 Flujo: `pagar.php` crea el pedido (pendiente); con tarjeta lleva a `pago-paypal.php?pedido=ID`; el botón llama a `api_paypal.php`, que crea la orden con el total leído de la base de datos, captura el pago en PayPal y solo si PayPal confirma `COMPLETED` por el monto esperado marca el pedido como `completed`. Efectivo queda pendiente.
+
+## Migraciones y claves de demostración
+
+Cada despliegue aplica las migraciones pendientes al arrancar (`[migrar]` en los logs). Las cuentas de demostración del seed son solo para local: tras el primer despliegue, entra como administrador y cambia las claves en *Mi cuenta*.
 
 ## Prueba de resiliencia para la demo
 

@@ -13,10 +13,3 @@ document.querySelectorAll('.ver-clave').forEach((boton) => {
 if (matchMedia('(hover: hover)').matches) {
    [...document.querySelectorAll('.acceso-caja input')].find((i) => !i.value)?.focus();
 }
-
-document.querySelectorAll('.avisos .mensaje').forEach((aviso, i) => {
-   setTimeout(() => {
-      aviso.classList.add('saliendo');
-      aviso.addEventListener('animationend', () => aviso.remove(), { once: true });
-   }, 4500 + i * 400);
-});

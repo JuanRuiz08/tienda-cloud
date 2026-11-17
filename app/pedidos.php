@@ -3,7 +3,7 @@ require_once __DIR__ . '/includes/app.php';
 
 $user_id = requerir_usuario();
 
-$pedidos = consulta($conn, 'CALL getUserOrders(?)', 'i', [$user_id]);
+$pedidos = consulta($conn, 'SELECT * FROM `orders` WHERE user_id = ? ORDER BY id DESC', 'i', [$user_id]);
 
 if (isset($_GET['pagado'])) {
    $message[] = '¡Pago recibido! Tu pedido quedó pagado.';
@@ -41,7 +41,7 @@ render_encabezado('Mis pedidos', 'Pedidos');
          <header>
             <div>
                <strong>Pedido #<?= (int) $pedido['id'] ?></strong>
-               <small><?= e($pedido['placed_on']) ?></small>
+               <small><?= e(fecha_corta($pedido['created_at']) ?: $pedido['placed_on']) ?></small>
             </div>
             <span class="estado estado-<?= e($pedido['payment_status']) ?>"><?= e($estados[$pedido['payment_status']] ?? $pedido['payment_status']) ?></span>
          </header>

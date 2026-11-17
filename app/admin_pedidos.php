@@ -6,14 +6,20 @@ requerir_admin();
 $estados = ['pending' => 'Pendiente', 'completed' => 'Completado'];
 
 if (isset($_POST['update_order']) && isset($estados[$_POST['update_payment'] ?? ''])) {
-   consulta($conn, 'UPDATE `orders` SET payment_status = ? WHERE id = ?', 'si',
-      [$_POST['update_payment'], (int) $_POST['order_id']]);
-   $message[] = '¡El estado del pedido #' . (int) $_POST['order_id'] . ' ahora es «' . $estados[$_POST['update_payment']] . '»!';
+   $id = (int) $_POST['order_id'];
+   consulta($conn, 'UPDATE `orders` SET payment_status = ? WHERE id = ?', 'si', [$_POST['update_payment'], $id]);
+   auditar($conn, 'pedido_estado', "Pedido #$id → " . $estados[$_POST['update_payment']]);
+   if ($_POST['update_payment'] === 'completed') {
+      correo_pedido_diferido($conn, $id, 'completado');
+   }
+   $message[] = "¡El estado del pedido #$id ahora es «" . $estados[$_POST['update_payment']] . '»!';
 }
 
-if (isset($_GET['delete'])) {
-   consulta($conn, 'CALL eliminar_pedido(?)', 'i', [(int) $_GET['delete']]);
-   redirigir('admin_pedidos.php');
+if (isset($_POST['eliminar'])) {
+   $id = (int) $_POST['eliminar'];
+   $aviso = eliminar_pedido($conn, $id);
+   auditar($conn, 'pedido_eliminado', $aviso);
+   $message[] = $aviso;
 }
 
 // Filtro por estado: ?estado=pending | completed (por defecto, todos).
@@ -23,10 +29,12 @@ $conteo = array_column(consulta($conn, 'SELECT payment_status, COUNT(*) AS n FRO
 $totales = ['todos' => array_sum($conteo), 'pending' => (int) ($conteo['pending'] ?? 0), 'completed' => (int) ($conteo['completed'] ?? 0)];
 
 // Los pendientes van primero (son los que requieren atención); dentro de cada grupo, el más reciente arriba.
-$pedidos = consulta($conn, 'SELECT * FROM `orders` ORDER BY (payment_status = \'pending\') DESC, id DESC');
-if ($filtro !== 'todos') {
-   $pedidos = array_values(array_filter($pedidos, fn ($p) => $p['payment_status'] === $filtro));
-}
+$pag = paginar($totales[$filtro], 12);
+$donde = $filtro === 'todos' ? '' : 'WHERE payment_status = ?';
+$sql = "SELECT * FROM `orders` $donde ORDER BY (payment_status = 'pending') DESC, id DESC LIMIT ? OFFSET ?";
+$pedidos = $filtro === 'todos'
+   ? consulta($conn, $sql, 'ii', [$pag['por'], $pag['desde']])
+   : consulta($conn, $sql, 'sii', [$filtro, $pag['por'], $pag['desde']]);
 
 // Etiqueta => [campo] (o [campo, 'precio'] para mostrarlo como dinero)
 $campos = [
@@ -68,7 +76,7 @@ include 'admin_header.php';
          <header>
             <div>
                <strong>Pedido #<?= (int) $pedido['id'] ?></strong>
-               <small><?= e($pedido['placed_on']) ?></small>
+               <small><?= e(fecha_corta($pedido['created_at']) ?: $pedido['placed_on']) ?></small>
             </div>
             <span class="estado estado-<?= e($pedido['payment_status']) ?>"><?= e($estados[$pedido['payment_status']] ?? $pedido['payment_status']) ?></span>
          </header>
@@ -78,6 +86,7 @@ include 'admin_header.php';
          <?php endforeach; ?>
 
          <form action="" method="post">
+            <?= csrf_campo() ?>
             <input type="hidden" name="order_id" value="<?= (int) $pedido['id'] ?>">
             <select name="update_payment" aria-label="Estado del pago">
                <?php foreach ($estados as $valor => $texto): ?>
@@ -86,9 +95,15 @@ include 'admin_header.php';
             </select>
             <input type="submit" value="actualizar" name="update_order" class="option-btn">
          </form>
+
+         <?= $pedido['payment_status'] === 'pending'
+            ? form_borrar('eliminar', (int) $pedido['id'], 'Cancelar pedido', '¿Cancelar el pedido #' . (int) $pedido['id'] . '? El stock volverá a la tienda.', 'boton-eliminar')
+            : form_borrar('eliminar', (int) $pedido['id'], 'Eliminar', '¿Eliminar el pedido #' . (int) $pedido['id'] . '? Ya estaba pagado: el stock no cambia.', 'boton-eliminar') ?>
       </div>
       <?php endforeach; ?>
    </div>
+
+   <?php render_paginador($pag, $filtro === 'todos' ? [] : ['estado' => $filtro]); ?>
 
 </section>
 

@@ -37,7 +37,7 @@ function alta_producto(mysqli $conn): string
    consulta($conn, 'CALL agregar_producto(?, ?, ?, ?, ?, ?)', 'sissis', [
       $nombre, (int) $_POST['price'], $_POST['category'], $imagen, (int) $_POST['stock'], trim($_POST['description']),
    ]);
-   app_log('info', "producto añadido: $nombre (imagen $imagen)");
+   auditar($conn, 'producto_creado', "$nombre — precio " . (int) $_POST['price'] . ", stock " . (int) $_POST['stock']);
    return 'Producto añadido exitosamente';
 }
 
@@ -55,19 +55,23 @@ function editar_producto(mysqli $conn): ?string
       $imagen = $nueva;
    }
 
+   $antes = consulta($conn, 'SELECT name, price, stock FROM `products` WHERE id = ?', 'i', [(int) $_POST['update_p_id']])[0] ?? [];
    consulta($conn, 'CALL actualizar_producto_con_stock(?, ?, ?, ?, ?)', 'isisi', [
       (int) $_POST['update_p_id'], trim($_POST['update_name']), (int) $_POST['update_price'], $imagen, (int) $_POST['update_stock'],
    ]);
+   auditar($conn, 'producto_editado', 'Producto #' . (int) $_POST['update_p_id'] . ': ' . ($antes['name'] ?? '?') . ' (' . ($antes['price'] ?? '?') . ' / stock ' . ($antes['stock'] ?? '?') . ') → ' . trim($_POST['update_name']) . ' (' . (int) $_POST['update_price'] . ' / stock ' . (int) $_POST['update_stock'] . ')');
    return null;
 }
 
 function baja_producto(mysqli $conn, int $id): void
 {
    $imagen = valor($conn, 'SELECT image FROM `products` WHERE id = ?', 'i', [$id]);
+   $nombre = (string) valor($conn, 'SELECT name FROM `products` WHERE id = ?', 'i', [$id]);
    if ($imagen !== null) {
       borrar_imagen($imagen);
    }
    consulta($conn, 'CALL eliminar_producto(?)', 'i', [$id]);
+   auditar($conn, 'producto_eliminado', "Producto #$id ($nombre)");
 }
 
 if (isset($_POST['add_product'])) {
@@ -82,12 +86,13 @@ if (isset($_POST['update_product'])) {
    }
 }
 
-if (isset($_GET['delete'])) {
-   baja_producto($conn, (int) $_GET['delete']);
+if (isset($_POST['eliminar'])) {
+   baja_producto($conn, (int) $_POST['eliminar']);
    redirigir('admin_productos.php');
 }
 
-$productos = consulta($conn, 'SELECT * FROM `products`');
+$pag = paginar((int) valor($conn, 'SELECT COUNT(*) FROM `products`'), 12);
+$productos = consulta($conn, 'SELECT * FROM `products` ORDER BY id LIMIT ? OFFSET ?', 'ii', [$pag['por'], $pag['desde']]);
 $en_edicion = isset($_GET['update'])
    ? (consulta($conn, 'SELECT * FROM `products` WHERE id = ?', 'i', [(int) $_GET['update']])[0] ?? null)
    : null;
@@ -101,6 +106,7 @@ include 'admin_header.php';
    <h1 class="title">Productos de la tienda</h1>
 
    <form action="" method="post" enctype="multipart/form-data">
+      <?= csrf_campo() ?>
       <h3>Añadir producto</h3>
       <input type="text" name="name" class="caja" placeholder="Ingrese el nombre del producto" required>
       <input type="text" name="description" class="caja" placeholder="Ingrese la descripcion del producto" required>
@@ -129,15 +135,17 @@ include 'admin_header.php';
             <div class="price"><?= precio($producto['price']) ?></div>
             <div class="stock">Stock: <?= e($producto['stock']) ?></div>
             <a href="admin_productos.php?update=<?= (int) $producto['id'] ?>" class="boton-opcion">Actualizar</a>
-            <a href="admin_productos.php?delete=<?= (int) $producto['id'] ?>" class="boton-eliminar" onclick="return confirm('¿Eliminar este producto?');">Eliminar</a>
+            <?= form_borrar('eliminar', (int) $producto['id'], 'Eliminar', '¿Eliminar este producto?') ?>
          </div>
          <?php endforeach; ?>
       </div>
+      <?php render_paginador($pag); ?>
    </section>
 
    <?php if ($en_edicion): ?>
    <section class="edit-product-form">
       <form action="" method="post" enctype="multipart/form-data">
+         <?= csrf_campo() ?>
          <input type="hidden" name="update_p_id" value="<?= (int) $en_edicion['id'] ?>">
          <input type="hidden" name="update_old_image" value="<?= e($en_edicion['image']) ?>">
          <img src="uploaded_img/<?= e($en_edicion['image']) ?>" alt="">

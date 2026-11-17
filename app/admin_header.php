@@ -12,6 +12,8 @@ $menu = [
    ['admin_productos.php', 'fa-boxes', 'Productos', null],
    ['admin_pedidos.php', 'fa-receipt', 'Pedidos', $pendientes],
    ['admin_usuarios.php', 'fa-users', 'Usuarios', null],
+   ['admin_actividad.php', 'fa-history', 'Actividad', null],
+   ['cuenta.php', 'fa-user-cog', 'Mi cuenta', null],
 ];
 
 render_mensajes($message ?? []);

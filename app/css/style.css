@@ -456,7 +456,10 @@ img.sin-imagen { visibility: hidden; }
 .carrito-de-compras .caja .sub-total { font-size: .78rem; color: var(--muted); text-align: right; }
 .carrito-de-compras .caja .sub-total span { display: block; margin-top: .1rem; font-size: 1.15rem; font-weight: 800; color: var(--ink); }
 
+.carrito-de-compras .caja .form-borrar { display: contents; }
 .carrito-de-compras .caja .fa-times {
+   border: 0;
+   cursor: pointer;
    display: grid;
    place-items: center;
    width: 38px;

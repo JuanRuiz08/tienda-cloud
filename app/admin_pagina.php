@@ -3,10 +3,12 @@ require_once __DIR__ . '/includes/app.php';
 
 requerir_admin();
 
-/** Fecha de un pedido (se guarda como texto "17-Nov-2026"), o null si no se puede leer. */
+/** Fecha de un pedido, o null si no se puede leer. */
 function fecha_pedido(string $texto): ?DateTimeImmutable
 {
-   return DateTimeImmutable::createFromFormat('!d-M-Y', $texto) ?: null;
+   // created_at es una fecha real ("2026-11-17 15:30:00"); los pedidos muy antiguos solo tienen el texto "17-Nov-2026".
+   $d = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $texto) ?: DateTimeImmutable::createFromFormat('!d-M-Y', $texto);
+   return $d ?: null;
 }
 
 /** "hoy", "ayer" o "hace N días", según la fecha de un pedido. */
@@ -27,6 +29,8 @@ function hace_cuanto(string $texto, DateTimeImmutable $hoy): string
 // Acción rápida: marcar como completado un pedido desde el panel.
 if (isset($_POST['completar'])) {
    consulta($conn, "UPDATE `orders` SET payment_status = 'completed' WHERE id = ?", 'i', [(int) $_POST['order_id']]);
+   auditar($conn, 'pedido_estado', 'Pedido #' . (int) $_POST['order_id'] . ' → Completado (desde el panel)');
+   correo_pedido_diferido($conn, (int) $_POST['order_id'], 'completado');
    $message[] = '¡Pedido #' . (int) $_POST['order_id'] . ' marcado como completado!';
 }
 
@@ -48,15 +52,15 @@ $tarjetas = [
 
 // ---------- Requiere atención ----------
 $n_pendientes = (int) valor($conn, "SELECT COUNT(*) FROM `orders` WHERE payment_status = 'pending'");
-$lista_pendientes = consulta($conn, "SELECT id, name, total_price, placed_on FROM `orders` WHERE payment_status = 'pending' ORDER BY id ASC LIMIT 4");
+$lista_pendientes = consulta($conn, "SELECT id, name, total_price, created_at, placed_on FROM `orders` WHERE payment_status = 'pending' ORDER BY id ASC LIMIT 4");
 $stock_bajo = consulta($conn, 'SELECT id, name, stock FROM `products` WHERE stock <= 3 ORDER BY stock ASC, name ASC LIMIT 6');
 
 // ---------- Ventas: lo cobrado (pedidos completados) en los últimos 7 días y en el mes ----------
-$completados = consulta($conn, "SELECT placed_on, total_price FROM `orders` WHERE payment_status = 'completed'");
+$completados = consulta($conn, "SELECT created_at, placed_on, total_price FROM `orders` WHERE payment_status = 'completed'");
 $por_dia = [];
 $mes = ['total' => 0, 'pedidos' => 0];
 foreach ($completados as $pedido) {
-   $fecha = fecha_pedido($pedido['placed_on']);
+   $fecha = fecha_pedido($pedido['created_at'] ?: $pedido['placed_on']);
    if ($fecha === null) {
       continue;
    }
@@ -146,7 +150,7 @@ include 'admin_header.php';
             <?php foreach ($lista_pendientes as $p): ?>
             <li class="alerta pend">
                <i class="fas fa-clock"></i>
-               <div><strong>#<?= (int) $p['id'] ?> · <?= e($p['name']) ?></strong><small><?= precio($p['total_price']) ?> · <?= e(hace_cuanto($p['placed_on'], $hoy)) ?></small></div>
+               <div><strong>#<?= (int) $p['id'] ?> · <?= e($p['name']) ?></strong><small><?= precio($p['total_price']) ?> · <?= e(hace_cuanto($p['created_at'] ?: $p['placed_on'], $hoy)) ?></small></div>
                <a href="admin_pedidos.php?estado=pending#pedido-<?= (int) $p['id'] ?>" class="mini">Ver</a>
             </li>
             <?php endforeach; ?>
@@ -193,13 +197,14 @@ include 'admin_header.php';
       <?php foreach ($recientes as $p): ?>
       <div class="fila-pedido">
          <strong class="num">#<?= (int) $p['id'] ?></strong>
-         <div class="cliente"><span><?= e($p['name']) ?></span><small><?= e(hace_cuanto($p['placed_on'], $hoy)) ?></small></div>
+         <div class="cliente"><span><?= e($p['name']) ?></span><small><?= e(hace_cuanto($p['created_at'] ?: $p['placed_on'], $hoy)) ?></small></div>
          <span class="metodo"><?= e($p['method']) ?></span>
          <strong class="total"><?= precio($p['total_price']) ?></strong>
          <span class="estado estado-<?= e($p['payment_status']) ?>"><?= e($estados[$p['payment_status']] ?? $p['payment_status']) ?></span>
          <div class="accion">
             <?php if ($p['payment_status'] === 'pending'): ?>
             <form action="" method="post">
+               <?= csrf_campo() ?>
                <input type="hidden" name="order_id" value="<?= (int) $p['id'] ?>">
                <button type="submit" name="completar" class="mini">Marcar completado</button>
             </form>

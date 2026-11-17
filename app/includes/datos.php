@@ -28,3 +28,11 @@ function valor(mysqli $conn, string $sql, string $tipos = '', array $params = []
     $fila = consulta($conn, $sql, $tipos, $params)[0] ?? null;
     return $fila === null ? null : reset($fila);
 }
+
+/** Datos de paginación a partir del total de filas y el parámetro ?pagina=. */
+function paginar(int $total, int $por_pagina = 12): array
+{
+    $paginas = max(1, (int) ceil($total / $por_pagina));
+    $pagina = min(max(1, (int) ($_GET['pagina'] ?? 1)), $paginas);
+    return ['total' => $total, 'por' => $por_pagina, 'paginas' => $paginas, 'pagina' => $pagina, 'desde' => ($pagina - 1) * $por_pagina];
+}

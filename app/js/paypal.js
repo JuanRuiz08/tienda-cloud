@@ -1,7 +1,9 @@
-// Botón de PayPal. window.PAGO.pedido lo define pago-paypal.php.
+// Botón de PayPal. El número de pedido está en data-pedido del contenedor (sin scripts en línea, por la CSP).
 // El total y la confirmación del pago los decide el servidor (api_paypal.php); aquí solo se coordina el botón.
 (() => {
-   const { pedido } = window.PAGO;
+   const contenedor = document.querySelector('#paypal-button-container');
+   const pedido = contenedor.dataset.pedido;
+   const csrf = document.querySelector('meta[name="csrf-token"]').content;
    const estado = document.querySelector('#pago-estado');
 
    const avisar = (texto, error = false) => {
@@ -12,7 +14,7 @@
    const llamar = (accion, cuerpo) =>
       fetch(`api_paypal.php?accion=${accion}&pedido=${pedido}`, {
          method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
+         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
          body: JSON.stringify(cuerpo || {}),
       }).then(async (r) => {
          const datos = await r.json().catch(() => ({}));

@@ -13,6 +13,16 @@ function precio(int|string|float $pesos): string
     return '$' . number_format((int) $pesos, 0, ',', '.');
 }
 
+/** Fecha corta en español: "2026-11-17 15:30:00" → "17 nov 2026". */
+function fecha_corta(?string $fecha): string
+{
+    if (!$fecha || !($d = date_create($fecha))) {
+        return '';
+    }
+    $meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return $d->format('j') . ' ' . $meses[(int) $d->format('n') - 1] . ' ' . $d->format('Y');
+}
+
 /** Agrega ?v=<fecha del archivo> para que el navegador recargue CSS/JS cuando cambian (nginx los cachea 7 días). */
 function url_con_version(string $ruta): string
 {
@@ -23,7 +33,9 @@ function url_con_version(string $ruta): string
 /** Abre el documento: <head> completo y <body>. $css es la hoja principal (style.css o admin_style.css). */
 function render_head(string $titulo, string $css = 'style.css', array $css_extra = []): void
 {
+    enviar_cabeceras_seguridad();
     $titulo = e($titulo);
+    $csrf = e(csrf_token());
     $hojas = '';
     foreach (array_merge(['base.css', $css], $css_extra) as $hoja) {
         $url = str_starts_with($hoja, 'http') ? $hoja : url_con_version("css/$hoja");
@@ -37,7 +49,8 @@ function render_head(string $titulo, string $css = 'style.css', array $css_extra
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>$titulo</title>
-   <link rel="icon" id="png" href="images/icon2.png">
+   <meta name="csrf-token" content="$csrf">
+   <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
    <link rel="preconnect" href="https://fonts.googleapis.com">
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -58,11 +71,50 @@ function render_mensajes(array $mensajes): void
     foreach ($mensajes as $mensaje) {
         echo '   <div class="mensaje">
       <span>' . e($mensaje) . '</span>
-      <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
+      <i class="fas fa-times" data-cerrar role="button" aria-label="Cerrar aviso"></i>
    </div>
 ';
     }
     echo "</div>\n";
+}
+
+/**
+ * Botón de borrado (o cancelación) que envía un POST con token CSRF y pide confirmación en el navegador
+ * (js/comun.js lee data-confirmar). Los borrados nunca son enlaces GET.
+ * $etiqueta puede llevar HTML de confianza (por ejemplo un icono).
+ */
+function form_borrar(string $campo, int $id, string $etiqueta, string $confirmar, string $clase = 'boton-eliminar'): string
+{
+    return '<form action="" method="post" class="form-borrar" data-confirmar="' . e($confirmar) . '">'
+        . csrf_campo()
+        . '<input type="hidden" name="' . e($campo) . '" value="' . $id . '">'
+        . '<button type="submit" class="' . e($clase) . '">' . $etiqueta . '</button></form>';
+}
+
+/** Navegación entre páginas ("‹ 1 2 3 ›"). $extra son los demás parámetros de la URL que se conservan (p. ej. el filtro). */
+function render_paginador(array $pag, array $extra = []): void
+{
+    if ($pag['paginas'] <= 1) {
+        return;
+    }
+    $enlace = fn (int $n): string => '?' . http_build_query($extra + ['pagina' => $n]);
+    $inicio = max(1, $pag['pagina'] - 2);
+    $fin = min($pag['paginas'], $inicio + 4);
+    $inicio = max(1, $fin - 4);
+
+    echo '<nav class="paginador" aria-label="Páginas">';
+    echo $pag['pagina'] > 1
+        ? '<a href="' . e($enlace($pag['pagina'] - 1)) . '" aria-label="Anterior"><i class="fas fa-chevron-left"></i></a>'
+        : '<span class="off"><i class="fas fa-chevron-left"></i></span>';
+    for ($n = $inicio; $n <= $fin; $n++) {
+        echo $n === $pag['pagina']
+            ? '<span class="actual" aria-current="page">' . $n . '</span>'
+            : '<a href="' . e($enlace($n)) . '">' . $n . '</a>';
+    }
+    echo $pag['pagina'] < $pag['paginas']
+        ? '<a href="' . e($enlace($pag['pagina'] + 1)) . '" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></a>'
+        : '<span class="off"><i class="fas fa-chevron-right"></i></span>';
+    echo '<small>' . $pag['total'] . ' en total</small></nav>' . "\n";
 }
 
 /** Banda de título con migas de pan: "Inicio / <pagina>". */
@@ -81,5 +133,6 @@ function render_cierre(string $js = 'script.js', bool $con_pie = true): void
     if ($con_pie) {
         include __DIR__ . '/../footer.php';
     }
+    echo '<script src="' . e(url_con_version('js/comun.js')) . "\"></script>\n";
     echo '<script src="' . e(url_con_version("js/$js")) . "\"></script>\n\n</body>\n</html>\n";
 }

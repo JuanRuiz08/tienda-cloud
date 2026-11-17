@@ -9,45 +9,26 @@ if (!$items) {
    $message[] = 'Tu carrito está vacío';
 }
 
-/** Resumen de los productos del pedido: "Nombre (cantidad) , Nombre (cantidad) ". */
-$resumen_productos = implode(', ', array_map(fn ($i) => $i['name'] . ' (' . $i['quantity'] . ') ', $items));
-
 if (isset($_POST['order_btn']) && $total > 0) {
    $campos = ['name', 'number', 'email', 'method', 'flat', 'street', 'city', 'country', 'pin_code'];
    $f = array_map(fn ($c) => trim((string) ($_POST[$c] ?? '')), array_combine($campos, $campos));
-
-   $direccion = 'flat no. ' . $f['flat'] . ', ' . $f['street'] . ', ' . $f['city'] . ', ' . $f['country'] . ' - ' . $f['pin_code'];
-   $fecha = date('d-M-Y');
-
    $metodo = in_array($f['method'], ['efectivo', 'tarjeta'], true) ? $f['method'] : 'efectivo';
 
-   // Todo o nada: descontar el stock, crear el pedido y vaciar el carrito van en una sola transacción.
-   $conn->begin_transaction();
-   try {
-      $aviso = reservar_stock($conn, $items);
-      if ($aviso !== null) {
-         $conn->rollback();
-         $message[] = $aviso;
-      } else {
-         consulta($conn,
-            'INSERT INTO `orders`(user_id, name, number, email, method, address, total_products, total_price, placed_on)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            'issssssis',
-            [$user_id, $f['name'], $f['number'], $f['email'], $metodo, $direccion, $resumen_productos, $total, $fecha]);
-         $pedido_id = (int) valor($conn, 'SELECT LAST_INSERT_ID()');
-         consulta($conn, 'DELETE FROM `cart` WHERE user_id = ?', 'i', [$user_id]);
-         $conn->commit();
-         app_log('info', "pedido $pedido_id creado user_id=$user_id total=$total método=$metodo");
+   [$pedido_id, $aviso] = crear_pedido($conn, $user_id, $items, [
+      'name' => $f['name'],
+      'number' => $f['number'],
+      'email' => $f['email'],
+      'direccion' => 'flat no. ' . $f['flat'] . ', ' . $f['street'] . ', ' . $f['city'] . ', ' . $f['country'] . ' - ' . $f['pin_code'],
+   ], $metodo);
 
-         // Tarjeta: se paga ahora con PayPal. Efectivo: queda pendiente y se paga al recibir el pedido.
-         redirigir($metodo === 'tarjeta' ? "pago-paypal.php?pedido=$pedido_id" : "pedidos.php?nuevo=$pedido_id");
-      }
-   } catch (Throwable $e) {
-      $conn->rollback();
-      throw $e;
+   if ($pedido_id === null) {
+      $message[] = $aviso;   // no alcanzó el stock: no se creó nada
+   } else {
+      correo_pedido_diferido($conn, $pedido_id, 'creado');
+      // Tarjeta: se paga ahora con PayPal. Efectivo: queda pendiente y se paga al recibir el pedido.
+      redirigir($metodo === 'tarjeta' ? "pago-paypal.php?pedido=$pedido_id" : "pedidos.php?nuevo=$pedido_id");
    }
 }
-
 render_head('Verificación de compra');
 include 'header.php';
 render_mensajes($message ?? []);
@@ -71,6 +52,7 @@ render_encabezado('Verificación', 'Verificación');
 <section class="checkout">
    <h1 class="title">Realizar Pedido</h1>
    <form action="" method="post">
+      <?= csrf_campo() ?>
       <div class="flex">
          <div class="inputBox">
             <span>Nombre:</span>

@@ -10,7 +10,8 @@ if ($pedido === null) {
 }
 
 $disponible = paypal_configurado();
-$usd = total_en_usd((int) $pedido['total_price']);
+$tasa = tasa_cop_usd($conn);
+$usd = total_en_usd((int) $pedido['total_price'], $tasa);
 
 render_head('Pago con PayPal');
 include 'header.php';
@@ -25,11 +26,11 @@ render_encabezado('Pago', 'Pago');
 
       <div class="pago-total">
          <span><?= precio($pedido['total_price']) ?></span>
-         <small>PayPal lo cobra como USD <?= e($usd) ?></small>
+         <small>PayPal lo cobra como USD <?= e($usd) ?> (1 USD ≈ <?= e(number_format($tasa, 0, ',', '.')) ?> COP)</small>
       </div>
 
       <?php if ($disponible): ?>
-         <div id="paypal-button-container"></div>
+         <div id="paypal-button-container" data-pedido="<?= (int) $pedido['id'] ?>"></div>
          <div id="pago-estado" role="status" aria-live="polite"></div>
       <?php else: ?>
          <p class="pago-aviso">El pago en línea no está disponible por ahora. Tu pedido quedó registrado como pendiente.</p>
@@ -42,7 +43,6 @@ render_encabezado('Pago', 'Pago');
 
 <?php if ($disponible): ?>
 <script src="https://www.paypal.com/sdk/js?client-id=<?= urlencode(paypal_config()['client_id']) ?>&amp;currency=USD&amp;intent=capture"></script>
-<script>window.PAGO = { pedido: <?= (int) $pedido['id'] ?> };</script>
 <script src="<?= e(url_con_version('js/paypal.js')) ?>"></script>
 <?php endif; ?>
 

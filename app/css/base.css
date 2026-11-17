@@ -269,3 +269,49 @@ input[type="file"]::file-selector-button {
    }
    .reveal { opacity: 1; transform: none; }
 }
+
+/* ---------- Botones de borrado (formularios POST con confirmación) ---------- */
+.form-borrar { margin: 0; }
+.form-borrar button { font-family: inherit; }
+
+/* ---------- Paginador ---------- */
+.paginador {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   justify-content: center;
+   gap: .4rem;
+   max-width: var(--ancho);
+   margin: 1.6rem auto 0;
+}
+.paginador a,
+.paginador span {
+   display: grid;
+   place-items: center;
+   min-width: 38px;
+   height: 38px;
+   padding: 0 .6rem;
+   border: 1px solid var(--line-strong);
+   border-radius: 12px;
+   background: var(--surface);
+   font-size: .88rem;
+   font-weight: 700;
+   color: var(--ink);
+   transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease), color var(--t) var(--ease);
+}
+.paginador a:hover { border-color: var(--ink); background: var(--surface-2); }
+.paginador .actual { border-color: var(--ink); background: var(--ink); color: #fff; }
+.paginador .off { opacity: .4; }
+.paginador small { margin-left: .6rem; font-size: .8rem; color: var(--muted); }
+
+/* ---------- Mi cuenta (tienda y panel) ---------- */
+.cuenta { padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem); }
+.cuenta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 1.1rem; align-items: start; max-width: var(--ancho); margin: 0 auto; }
+.cuenta .panel-card { padding: 1.5rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--sh-1); }
+.cuenta .panel-card h2 { font-size: 1.2rem; letter-spacing: -.01em; }
+.cuenta .panel-card .sub { margin: .2rem 0 1.2rem; font-size: .88rem; color: var(--muted); }
+.form-cuenta { display: grid; gap: 1rem; }
+.form-cuenta .boton { width: 100%; margin-top: .3rem; }
+.datos-cuenta { display: grid; grid-template-columns: auto 1fr; gap: .7rem 1.2rem; font-size: .92rem; }
+.datos-cuenta dt { color: var(--muted); }
+.datos-cuenta dd { font-weight: 700; text-align: right; word-break: break-word; }

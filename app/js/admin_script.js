@@ -29,14 +29,6 @@ document.addEventListener('keydown', (e) => {
       botonMenu.focus();
    }
 });
-// Avisos: se cierran solos
-document.querySelectorAll('.avisos .mensaje').forEach((aviso, i) => {
-   setTimeout(() => {
-      aviso.classList.add('saliendo');
-      aviso.addEventListener('animationend', () => aviso.remove(), { once: true });
-   }, 4500 + i * 400);
-});
-
 // Ventana de edición: se cierra con Escape o al hacer clic en el fondo
 const modal = document.querySelector('.edit-product-form');
 if (modal) {
@@ -46,46 +38,44 @@ if (modal) {
 }
 
 /* ---------- Actualización en vivo ----------
-   Cada zona marcada con data-vivo="nombre" se vuelve a pedir al servidor cada pocos segundos y solo se
-   reemplaza si cambió (así un pedido nuevo o un pago de PayPal se ven sin recargar). */
+   Cada 8 s se consulta api_admin.php (un JSON diminuto con una "versión" de los datos y el contador de
+   pendientes). Solo si la versión cambió, las zonas marcadas con data-vivo="nombre" se vuelven a pedir al
+   servidor y se reemplazan si cambió su contenido (un pedido nuevo o un pago de PayPal se ven sin recargar). */
 const zonasVivas = document.querySelectorAll('[data-vivo]');
-
-if (zonasVivas.length) {
-   const refrescarZonas = async () => {
-      if (document.hidden) return;
-      try {
-         const html = await (await fetch(location.href, { cache: 'no-store', credentials: 'same-origin' })).text();
-         const doc = new DOMParser().parseFromString(html, 'text/html');
-         zonasVivas.forEach((zona) => {
-            // No se pisa una zona mientras el admin está usando un control dentro de ella.
-            if (zona !== document.body && zona.contains(document.activeElement) && document.activeElement !== document.body) return;
-            const nueva = doc.querySelector(`[data-vivo="${zona.dataset.vivo}"]`);
-            if (nueva && nueva.innerHTML !== zona.innerHTML) zona.innerHTML = nueva.innerHTML;
-         });
-      } catch (e) { /* sin red: se reintenta en el próximo ciclo */ }
-   };
-   setInterval(refrescarZonas, 8000);
-   document.addEventListener('visibilitychange', refrescarZonas);
-}
-
-/* ---------- Contador de pendientes del menú (en todas las páginas del panel) ---------- */
 const insigniaPendientes = document.querySelector('[data-pendientes]');
+let versionPanel = null;
 
-if (insigniaPendientes) {
-   const consultarPendientes = () => {
-      if (document.hidden) return;
-      fetch('api_admin.php', { cache: 'no-store' })
-         .then((r) => (r.ok ? r.json() : null))
-         .then((datos) => {
-            if (!datos) return;
-            insigniaPendientes.textContent = datos.pendientes;
-            insigniaPendientes.classList.toggle('cero', datos.pendientes === 0);
-         })
-         .catch(() => {});
-   };
-   setInterval(consultarPendientes, 8000);
-   document.addEventListener('visibilitychange', consultarPendientes);
+async function refrescarZonas() {
+   try {
+      const html = await (await fetch(location.href, { cache: 'no-store', credentials: 'same-origin' })).text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      zonasVivas.forEach((zona) => {
+         // No se pisa una zona mientras el admin está usando un control dentro de ella.
+         if (zona.contains(document.activeElement) && document.activeElement !== document.body) return;
+         const nueva = doc.querySelector(`[data-vivo="${zona.dataset.vivo}"]`);
+         if (nueva && nueva.innerHTML !== zona.innerHTML) zona.innerHTML = nueva.innerHTML;
+      });
+   } catch (e) { /* sin red: se reintenta en el próximo ciclo */ }
 }
+
+async function consultarEstadoPanel() {
+   if (document.hidden) return;
+   try {
+      const r = await fetch('api_admin.php', { cache: 'no-store', credentials: 'same-origin' });
+      if (!r.ok) return;
+      const datos = await r.json();
+      if (insigniaPendientes) {
+         insigniaPendientes.textContent = datos.pendientes;
+         insigniaPendientes.classList.toggle('cero', datos.pendientes === 0);
+      }
+      if (versionPanel !== null && datos.version !== versionPanel && zonasVivas.length) refrescarZonas();
+      versionPanel = datos.version;
+   } catch (e) { /* se reintenta en el próximo ciclo */ }
+}
+
+consultarEstadoPanel();
+setInterval(consultarEstadoPanel, 8000);
+document.addEventListener('visibilitychange', consultarEstadoPanel);
 /* ---------- Stock en vivo en la lista de productos ---------- */
 const tarjetasProducto = document.querySelectorAll('.show-products .caja[id^="producto-"]');
 

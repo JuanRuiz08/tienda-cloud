@@ -56,7 +56,7 @@ Requisitos: Docker Desktop (o Docker Engine) con Docker Compose v2.
 | Administrador | admin@tienda.local | Admin2026! |
 | Cliente | cliente@tienda.local | Cliente2026! |
 
-Cambia estas contraseñas si vas a usar el proyecto fuera de pruebas. phpMyAdmin está en http://127.0.0.1:8081 (usuario `root` y la clave `MYSQL_ROOT_PASSWORD` de tu `.env`).
+Son cuentas **solo para el entorno local**; en la nube se cambian desde *Mi cuenta* (`cuenta.php`). Las contraseñas nuevas deben tener 8 caracteres o más, con letras y números. phpMyAdmin está en http://127.0.0.1:8081 (usuario `root` y la clave `MYSQL_ROOT_PASSWORD` de tu `.env`).
 
 ## Variables de entorno
 
@@ -68,6 +68,9 @@ Se definen en `.env` (no se sube a Git; el modelo está en `.env.example`). Ning
 | `MYSQL_ROOT_PASSWORD` | Clave del usuario root de MySQL |
 | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | Credenciales de una app de PayPal Developer (opcionales; sin ellas el pago con tarjeta queda desactivado y el pedido queda pendiente) |
 | `PAYPAL_ENV`, `PAYPAL_COP_PER_USD` | `sandbox` o `live`; pesos por dólar para convertir el total (PayPal no cobra en COP) |
+| `PAYPAL_TASA_AUTO` | `1` (por defecto): la tasa COP/USD se consulta a open.er-api.com y se guarda 6 horas; `0` usa siempre `PAYPAL_COP_PER_USD` |
+| `CSP_MODO` | Política de seguridad de contenido: `enforce` (por defecto), `report` (solo avisa en la consola del navegador) u `off` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Correo de confirmación de pedidos (opcional; sin `SMTP_HOST` no se envía nada) |
 | `WEB_PORT`, `PMA_PORT` | Puertos publicados en tu equipo (por defecto 8080 y 8081) |
 
 ## Comandos útiles
@@ -87,6 +90,16 @@ docker compose down -v             # borrar también los volúmenes (empieza de 
 - Las sesiones de usuario se guardan en la tabla `sessions` de MySQL, por eso reiniciar o recrear el contenedor `app` no cierra la sesión de nadie (la aplicación es stateless).
 - Los logs salen por la salida estándar de cada contenedor y se consultan con `docker compose logs`.
 
+## Base de datos: migraciones y copias de seguridad
+
+- **Migraciones:** `database/migrations/NNN_nombre.php` cambian el esquema de una base que ya existe. `docker/migrar.php` las aplica en orden al arrancar `app` (local y Railway) y registra cuáles corrieron en `schema_migrations`; una base nueva ejecuta el seed y luego las migraciones. Para un cambio nuevo, agrega el siguiente número; nunca edites una migración ya aplicada.
+- **Copias:** `.\scripts\backup.ps1` genera `backups/tienda-FECHA.sql` desde el contenedor local; el administrador también puede descargar una copia desde *Mi cuenta → Copia de seguridad* (funciona igual en Railway). Para restaurar: `Get-Content backups\ARCHIVO.sql -Raw | docker compose exec -T db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'`.
+- **Verificación antes de desplegar:** `.\scripts\verificar.ps1` construye las dos imágenes (local y Railway, desde el mismo código), levanta el entorno y comprueba salud, sintaxis PHP, páginas, CSP y CSRF.
+
+## Seguridad
+
+Formularios con token CSRF (todo POST sin token da 403) y borrados siempre por POST con confirmación · bloqueo temporal tras 6 intentos fallidos de login por correo (30 por IP) en 15 minutos · contraseñas de 8+ caracteres con letras y números · cookie de sesión `HttpOnly`, `SameSite=Lax` y `Secure` bajo HTTPS · cabeceras CSP, HSTS (solo HTTPS) y Permissions-Policy · registro de actividad del administrador en *Actividad* (tabla `auditoria`) · listas paginadas.
+
 ## Estructura del repositorio
 
 ```
@@ -97,7 +110,9 @@ app/                código PHP, CSS, JS e imágenes de la tienda
                     vistas.php (head, mensajes, cierre), datos.php (consultas con parámetros),
                     tienda.php (tarjeta de producto y carrito), autenticacion.php (login)
   header.php, footer.php, admin_header.php   partes comunes de las páginas
-database/init/      esquema, procedimientos almacenados y datos de muestra
+database/init/      esquema, procedimientos almacenados y datos de muestra (base nueva)
+database/migrations/ cambios de esquema incrementales (se aplican solos al arrancar)
+scripts/            backup.ps1 (copia local) y verificar.ps1 (chequeo previo al despliegue)
 docker/app/         Dockerfile y configuración de PHP-FPM
 docker/web/         Dockerfile y configuración de nginx
 seed/uploaded_img/  imágenes de muestra de los productos
@@ -123,4 +138,4 @@ La tienda también se despliega en Railway con una imagen propia (`docker/railwa
 
 ## Deuda técnica pendiente
 
-Quedaron fuera de esta fase y se documentan en el informe: no hay protección CSRF en los formularios ni límite de intentos de inicio de sesión. (Ya resueltos: las consultas usan parámetros y el pago de PayPal se crea y se captura en el servidor.)
+Lo que queda abierto de forma consciente: no hay recuperación de contraseña por correo ni verificación del correo al registrarse; los correos de pedido se envían por SMTP simple (sin cola de reintentos); el listado del panel se actualiza por sondeo cada 8 s y no por WebSockets; no hay pruebas automatizadas de PHP (solo `scripts/verificar.ps1` y `evidencias/`). Ya resueltos: consultas con parámetros, pago de PayPal en el servidor con monto congelado, CSRF, límite de intentos de login, migraciones, copias, auditoría, paginación y pedidos con tabla de ítems.

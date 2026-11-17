@@ -43,7 +43,7 @@ function acceso_cerrar(): void
 }
 
 /** Campo de formulario con etiqueta e icono; las contraseñas llevan un botón para mostrarlas u ocultarlas. */
-function acceso_campo(string $tipo, string $nombre, string $etiqueta, string $icono, string $autocompletar, string $valor = ''): void
+function acceso_campo(string $tipo, string $nombre, string $etiqueta, string $icono, string $autocompletar, string $valor = '', string $atributos = ''): void
 {
     $clave = $tipo === 'password';
     ?>
@@ -51,7 +51,7 @@ function acceso_campo(string $tipo, string $nombre, string $etiqueta, string $ic
                <span><?= e($etiqueta) ?></span>
                <div class="entrada<?= $clave ? ' con-ver' : '' ?>">
                   <i class="fas <?= e($icono) ?> icono"></i>
-                  <input type="<?= e($tipo) ?>" name="<?= e($nombre) ?>" value="<?= e($valor) ?>" autocomplete="<?= e($autocompletar) ?>" required>
+                  <input type="<?= e($tipo) ?>" name="<?= e($nombre) ?>" value="<?= e($valor) ?>" autocomplete="<?= e($autocompletar) ?>" <?= $atributos ?> required>
                   <?php if ($clave): ?>
                   <button type="button" class="ver-clave" aria-label="Mostrar contraseña"><i class="fas fa-eye"></i></button>
                   <?php endif; ?>

@@ -20,32 +20,10 @@ DELIMITER $$
 --
 -- Procedimientos
 --
-CREATE PROCEDURE `actualizar_cantidad_carrito` (IN `p_cart_id` INT, IN `p_cart_quantity` INT)   BEGIN
-    UPDATE `cart`
-    SET quantity = p_cart_quantity
-    WHERE id = p_cart_id;
-END$$
-
-CREATE PROCEDURE `actualizar_estado_pago` (IN `p_pedido_id` INT, IN `p_estado_pago` VARCHAR(50))   BEGIN
-    -- Actualizar el estado de pago en la tabla de pedidos
-    UPDATE pedidos
-    SET estado_pago = p_estado_pago
-    WHERE id = p_pedido_id;
-END$$
-
-CREATE PROCEDURE `actualizar_producto` (IN `p_product_id` INT, IN `p_name` VARCHAR(100), IN `p_price` INT, IN `p_image` VARCHAR(100))   BEGIN
-    UPDATE products SET name = p_name, price = p_price, image = p_image WHERE id = p_product_id;
-END$$
-
 CREATE PROCEDURE `actualizar_producto_con_stock` (IN `p_product_id` INT, IN `p_name` VARCHAR(100), IN `p_price` INT, IN `p_image` VARCHAR(100), IN `p_stock` INT)   BEGIN
     UPDATE products 
     SET name = p_name, price = p_price, image = p_image, stock = p_stock 
     WHERE id = p_product_id;
-END$$
-
-CREATE PROCEDURE `addCartItem` (IN `p_user_id` INT, IN `p_product_name` VARCHAR(100), IN `p_product_price` INT, IN `p_product_quantity` INT, IN `p_product_image` VARCHAR(100))   BEGIN
-    INSERT INTO cart (user_id, name, price, quantity, image) 
-    VALUES (p_user_id, p_product_name, p_product_price, p_product_quantity, p_product_image);
 END$$
 
 CREATE PROCEDURE `agregar_producto` (IN `p_name` VARCHAR(100), IN `p_price` INT, IN `p_category` VARCHAR(50), IN `p_image` VARCHAR(100), IN `p_stock` INT, IN `p_description` VARCHAR(100))   BEGIN
@@ -53,52 +31,8 @@ CREATE PROCEDURE `agregar_producto` (IN `p_name` VARCHAR(100), IN `p_price` INT,
     VALUES (p_name, p_description, p_price, p_category, p_image, p_stock);
 END$$
 
-CREATE PROCEDURE `checkCartItem` (IN `p_user_id` INT, IN `p_product_name` VARCHAR(100))   BEGIN
-    SELECT * FROM cart WHERE name = p_product_name AND user_id = p_user_id;
-END$$
-
-CREATE PROCEDURE `eliminar_pedido` (IN `p_order_id` INT)   BEGIN
-    DELETE FROM orders WHERE id = p_order_id;
-END$$
-
 CREATE PROCEDURE `eliminar_producto` (IN `p_product_id` INT)   BEGIN
     DELETE FROM products WHERE id = p_product_id;
-END$$
-
-CREATE PROCEDURE `eliminar_producto_carrito` (IN `p_cart_id` INT)   BEGIN
-    DELETE FROM cart WHERE id = p_cart_id;
-END$$
-
-CREATE PROCEDURE `getUserOrders` (IN `p_user_id` INT)   BEGIN
-    SELECT * 
-    FROM orders 
-    WHERE user_id = p_user_id;
-END$$
-
-CREATE PROCEDURE `insertOrder` (IN `p_user_id` INT, IN `p_name` VARCHAR(100), IN `p_number` VARCHAR(12), IN `p_email` VARCHAR(100), IN `p_method` VARCHAR(50), IN `p_address` VARCHAR(500), IN `p_total_products` VARCHAR(1000), IN `p_total_price` INT, IN `p_placed_on` VARCHAR(50))   BEGIN
-    DECLARE done INT DEFAULT 0;
-    DECLARE cart_name VARCHAR(100);
-    DECLARE cart_quantity INT;
-    DECLARE cur CURSOR FOR 
-        SELECT name, quantity 
-        FROM cart 
-        WHERE user_id = p_user_id;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-
-    OPEN cur;
-    read_loop: LOOP
-        FETCH cur INTO cart_name, cart_quantity;
-        IF done THEN
-            LEAVE read_loop;
-        END IF;
-        UPDATE products 
-        SET stock = stock - cart_quantity 
-        WHERE name = cart_name;
-    END LOOP;
-    CLOSE cur;
-
-    INSERT INTO orders (user_id, name, number, email, method, address, total_products, total_price, placed_on)
-    VALUES (p_user_id, p_name, p_number, p_email, p_method, p_address, p_total_products, p_total_price, p_placed_on);
 END$$
 
 CREATE PROCEDURE `loginUser` (IN `p_email` VARCHAR(100))   BEGIN
@@ -149,19 +83,6 @@ CREATE TABLE `cart` (
 
 -- --------------------------------------------------------
 
---
--- Estructura de tabla para la tabla `message`
---
-
-CREATE TABLE `message` (
-  `id` int(100) NOT NULL,
-  `user_id` int(100) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `number` varchar(12) NOT NULL,
-  `message` varchar(500) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 -- --------------------------------------------------------
 
 --
@@ -210,7 +131,7 @@ CREATE TABLE `products` (
 INSERT INTO `products` (`id`, `name`, `price`, `image`, `category`, `stock`, `description`) VALUES
 (44, 'Ancheta ', 40000, 'ancheta 1.jpg', 'dulceria', 2, 'Regalo para un cumpleaños.'),
 (45, 'Termo verde ', 20000, 'Termo.jpg', 'uso personal', 3, 'termo de acero inoxidable de color verde, ideal para mantener tus bebidas a la temperatura deseada p'),
-(46, 'Pañitos Humedo', 15000, 'pañitos p.jpg', 'uso personal', 5, 'toallitas húmedas para bebés de la marca Pequeñin'),
+(46, 'Pañitos Humedo', 15000, 'panitos.jpg', 'uso personal', 5, 'toallitas húmedas para bebés de la marca Pequeñin'),
 (47, 'Cuaderno', 5000, 'Cuaderno 3.jpg', 'escolar', 3, 'cuardeno negro'),
 (48, 'Galletas tosh', 1000, 'galletas tosh.jpg', 'dulceria', 8, 'galletas integrales de avena'),
 (49, 'Billetera ', 5000, 'Billeteras-para-hombre-45650016-79807_2.jpg', 'uso personal', 6, 'billetera de cuero negra para hombres'),
@@ -265,12 +186,6 @@ ALTER TABLE `cart`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indices de la tabla `message`
---
-ALTER TABLE `message`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indices de la tabla `orders`
 --
 ALTER TABLE `orders`
@@ -296,12 +211,6 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT de la tabla `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
-
---
--- AUTO_INCREMENT de la tabla `message`
---
-ALTER TABLE `message`
   MODIFY `id` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --

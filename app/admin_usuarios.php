@@ -1,16 +1,29 @@
 <?php
 require_once __DIR__ . '/includes/app.php';
 
-requerir_admin();
+$admin_id = requerir_admin();
 
-if (isset($_GET['delete'])) {
-   // Al borrar una cuenta también se vacía su carrito, para no dejar filas huérfanas.
-   consulta($conn, 'DELETE FROM `cart` WHERE user_id = ?', 'i', [(int) $_GET['delete']]);
-   consulta($conn, 'DELETE FROM `users` WHERE id = ?', 'i', [(int) $_GET['delete']]);
-   redirigir('admin_usuarios.php');
+if (isset($_POST['eliminar'])) {
+   $id = (int) $_POST['eliminar'];
+   $usuario = consulta($conn, 'SELECT id, name, email, user_type FROM `users` WHERE id = ?', 'i', [$id])[0] ?? null;
+
+   if ($usuario === null) {
+      $message[] = 'La cuenta no existe.';
+   } elseif ($id === $admin_id) {
+      $message[] = 'No puedes eliminar tu propia cuenta.';
+   } elseif ($usuario['user_type'] === 'admin') {
+      $message[] = 'Las cuentas de administrador no se eliminan desde aquí.';
+   } else {
+      // Al borrar una cuenta también se vacía su carrito, para no dejar filas huérfanas.
+      consulta($conn, 'DELETE FROM `cart` WHERE user_id = ?', 'i', [$id]);
+      consulta($conn, 'DELETE FROM `users` WHERE id = ?', 'i', [$id]);
+      auditar($conn, 'usuario_eliminado', "Cuenta #$id ({$usuario['email']})");
+      $message[] = 'Cuenta de ' . $usuario['email'] . ' eliminada.';
+   }
 }
 
-$usuarios = consulta($conn, 'SELECT * FROM `users`');
+$pag = paginar((int) valor($conn, 'SELECT COUNT(*) FROM `users`'), 12);
+$usuarios = consulta($conn, 'SELECT * FROM `users` ORDER BY id LIMIT ? OFFSET ?', 'ii', [$pag['por'], $pag['desde']]);
 
 render_head('Usuarios', 'admin_style.css');
 include 'admin_header.php';
@@ -27,10 +40,14 @@ include 'admin_header.php';
          <p> Nombre de usuario : <span><?= e($usuario['name']) ?></span> </p>
          <p> Correo electrónico : <span><?= e($usuario['email']) ?></span> </p>
          <p> Tipo de usuario : <span class="rol-<?= e($usuario['user_type']) ?>"><?= e($usuario['user_type']) ?></span> </p>
-         <a href="admin_usuarios.php?delete=<?= (int) $usuario['id'] ?>" onclick="return confirm('¿Eliminar este usuario?');" class="boton-eliminar">Eliminar usuario</a>
+         <?php if ($usuario['user_type'] !== 'admin'): ?>
+         <?= form_borrar('eliminar', (int) $usuario['id'], 'Eliminar usuario', '¿Eliminar la cuenta de ' . $usuario['email'] . '?') ?>
+         <?php endif; ?>
       </div>
       <?php endforeach; ?>
    </div>
+
+   <?php render_paginador($pag); ?>
 
 </section>
 

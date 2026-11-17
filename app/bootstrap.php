@@ -114,7 +114,22 @@ class SesionesEnBD implements SessionHandlerInterface
     }
 }
 
+/** ¿La petición llegó por HTTPS? (Railway termina el TLS en su proxy y avisa con X-Forwarded-Proto.) */
+function https_activo(): bool
+{
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+}
+
 if (PHP_SAPI !== 'cli') {
+    // La cookie de sesión solo viaja por HTTPS (en local, sin HTTPS, sigue funcionando por HTTP).
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => https_activo(),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_set_save_handler(new SesionesEnBD(), true);
 }
 

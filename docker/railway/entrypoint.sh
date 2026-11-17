@@ -11,11 +11,15 @@ if [ ! -f "$UP/.seeded" ]; then
     cp -r /opt/seed/uploaded_img/. "$UP"/
     touch "$UP/.seeded"
 fi
+# Imágenes de muestra nuevas se copian aunque el volumen ya exista; no pisa nada.
+for f in /opt/seed/uploaded_img/*; do [ -e "$UP/$(basename "$f")" ] || cp "$f" "$UP"/; done
 # Un volumen de Railway se monta como root: se entrega a www-data.
 chown -R www-data:www-data "$UP" /tmp/nginx
 
 # Railway no ejecuta database/init/: si la base está vacía, se cargan el esquema y los datos de muestra.
 php /usr/local/bin/init-db.php || echo "[entrypoint] aviso: la inicialización de la base falló"
+# Migraciones pendientes (cambios de esquema posteriores al volcado inicial).
+php /usr/local/bin/migrar.php || echo "[entrypoint] aviso: las migraciones no se pudieron aplicar"
 
 # Railway asigna el puerto por la variable PORT.
 # Un reinicio reutiliza el disco del contenedor: el archivo de la ejecución anterior (de www-data) sigue en /tmp,

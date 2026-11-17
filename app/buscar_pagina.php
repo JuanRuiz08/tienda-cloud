@@ -8,7 +8,7 @@ if ($aviso = procesar_agregar_al_carrito($conn, $user_id)) {
 }
 
 // Se busca en nombre y descripción.
-$termino = trim((string) ($_POST['search'] ?? ''));
+$termino = trim((string) ($_GET['search'] ?? ''));
 $resultados = [];
 if ($termino !== '') {
    $comodin = '%' . $termino . '%';
@@ -22,9 +22,9 @@ render_encabezado('Buscar productos', 'Búsqueda');
 ?>
 
 <section class="formulario-busqueda">
-   <form action="" method="post">
+   <form action="" method="get">
       <input type="text" name="search" placeholder="buscar productos..." class="caja" value="<?= e($termino) ?>">
-      <input type="submit" name="submit" value="buscar" class="boton">
+      <input type="submit" value="buscar" class="boton">
    </form>
 </section>
 

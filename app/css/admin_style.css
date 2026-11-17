@@ -555,3 +555,18 @@ body.menu-abierto { overflow: hidden; }
    .rapidas .boton,
    .rapidas .boton-opcion { flex: 1 1 100%; }
 }
+
+/* ---------- Actividad (registro de auditoría) ---------- */
+.actividad .sub-titulo { max-width: var(--ancho); margin: -1rem auto 1.4rem; color: var(--muted); }
+.actividad .panel-card { max-width: var(--ancho); margin: 0 auto; padding: .4rem 1.4rem; }
+.registro { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 1rem; padding: .9rem 0; border-top: 1px solid var(--line); }
+.registro:first-of-type { border-top: 0; }
+.icono-registro { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--brand-50); color: var(--brand); font-size: .9rem; }
+.detalle-registro strong { display: block; }
+.detalle-registro span { font-size: .86rem; color: var(--muted); word-break: break-word; }
+.quien { text-align: right; font-size: .9rem; }
+.quien small { display: block; font-size: .78rem; color: var(--muted); white-space: nowrap; }
+@media (max-width: 700px) {
+   .registro { grid-template-columns: 40px minmax(0, 1fr); }
+   .quien { grid-column: 2; text-align: left; }
+}

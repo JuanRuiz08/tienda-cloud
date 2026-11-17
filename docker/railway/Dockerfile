@@ -24,6 +24,8 @@ RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start.sh /etc/n
 COPY app/ /var/www/html/
 COPY seed/uploaded_img/ /opt/seed/uploaded_img/
 COPY database/init/ /opt/init/
+COPY database/migrations/ /opt/migrations/
+COPY docker/migrar.php /usr/local/bin/migrar.php
 RUN mkdir -p /var/www/html/uploaded_img && chown www-data:www-data /var/www/html/uploaded_img
 
 WORKDIR /var/www/html

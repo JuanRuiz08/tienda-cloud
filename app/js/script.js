@@ -222,22 +222,36 @@ if (tarjetasStock.length) {
    document.addEventListener('visibilitychange', consultarStock);
 }
 
-/* ---------- Mis pedidos en vivo: el estado cambia solo cuando el admin o PayPal lo actualizan ---------- */
+/* ---------- Mis pedidos en vivo: el estado cambia solo cuando el admin o PayPal lo actualizan ----------
+   Se consulta api_pedidos.php (una "versión" diminuta) y solo si cambia se vuelve a pedir la lista. */
 const zonaPedidos = document.querySelector('.pedidos [data-vivo="pedidos"]');
 
 if (zonaPedidos) {
+   let versionPedidos = null;
+
    const refrescarPedidos = async () => {
-      if (document.hidden) return;
       try {
          const html = await (await fetch(location.pathname, { cache: 'no-store', credentials: 'same-origin' })).text();
          const nueva = new DOMParser().parseFromString(html, 'text/html').querySelector('.pedidos [data-vivo="pedidos"]');
          if (nueva && nueva.innerHTML !== zonaPedidos.innerHTML) zonaPedidos.innerHTML = nueva.innerHTML;
       } catch (e) { /* se reintenta en el próximo ciclo */ }
    };
-   setInterval(refrescarPedidos, 8000);
-   document.addEventListener('visibilitychange', refrescarPedidos);
-}
 
+   const consultarPedidos = async () => {
+      if (document.hidden) return;
+      try {
+         const r = await fetch('api_pedidos.php', { cache: 'no-store', credentials: 'same-origin' });
+         if (!r.ok) return;
+         const { version } = await r.json();
+         if (versionPedidos !== null && version !== versionPedidos) refrescarPedidos();
+         versionPedidos = version;
+      } catch (e) { /* se reintenta en el próximo ciclo */ }
+   };
+
+   consultarPedidos();
+   setInterval(consultarPedidos, 8000);
+   document.addEventListener('visibilitychange', consultarPedidos);
+}
 /* ---------- Aparición suave al entrar en pantalla ---------- */
 const objetivos = document.querySelectorAll(
    '.show-products .caja-container .caja, .carrito-de-compras .caja-container .caja, .pedidos .caja,' +
@@ -261,14 +275,6 @@ if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: re
       observador.observe(el);
    });
 }
-
-/* ---------- Avisos: se cierran solos ---------- */
-document.querySelectorAll('.avisos .mensaje').forEach((aviso, i) => {
-   setTimeout(() => {
-      aviso.classList.add('saliendo');
-      aviso.addEventListener('animationend', () => aviso.remove(), { once: true });
-   }, 4500 + i * 400);
-});
 
 /* ---------- Imagen de producto que no carga: se muestra un marcador ---------- */
 document.querySelectorAll('.media img, .carrito-de-compras .caja img').forEach((img) => {

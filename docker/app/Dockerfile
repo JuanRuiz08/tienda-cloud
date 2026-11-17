@@ -18,6 +18,9 @@ RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
 #    El código queda de solo lectura para el usuario de ejecución.
 COPY app/ /var/www/html/
 COPY seed/uploaded_img/ /opt/seed/uploaded_img/
+# Migraciones de la base de datos: se aplican al arrancar (entrypoint.sh).
+COPY database/migrations/ /opt/migrations/
+COPY docker/migrar.php /usr/local/bin/migrar.php
 
 # Única carpeta con escritura: la de imágenes subidas (se monta como volumen).
 RUN mkdir -p /var/www/html/uploaded_img \

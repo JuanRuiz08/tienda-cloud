@@ -30,14 +30,18 @@ if ($pedido === null) {
     responder(404, ['error' => 'No hay un pedido pendiente de pago.']);
 }
 $id = (int) $pedido['id'];
-$usd = total_en_usd((int) $pedido['total_price']);
+$total = (int) $pedido['total_price'];
 
 try {
     switch ($_GET['accion'] ?? '') {
         case 'crear':
+            // La tasa se congela aquí: el monto en dólares queda guardado en el pedido y es el que se exige al capturar.
+            $tasa = tasa_cop_usd($conn);
+            $usd = total_en_usd($total, $tasa);
             $paypal_id = paypal_crear_orden($id, $usd);
+            consulta($conn, 'UPDATE `orders` SET usd_total = ? WHERE id = ?', 'si', [$usd, $id]);
             $_SESSION['paypal_orden'][$id] = $paypal_id;   // se compara al capturar
-            app_log('info', "orden PayPal $paypal_id creada para el pedido $id (USD $usd)");
+            app_log('info', "orden PayPal $paypal_id creada para el pedido $id (USD $usd, tasa $tasa)");
             responder(200, ['id' => $paypal_id]);
 
         case 'capturar':
@@ -45,12 +49,17 @@ try {
             if ($enviado === '' || !hash_equals($_SESSION['paypal_orden'][$id] ?? '', $enviado)) {
                 responder(400, ['error' => 'La orden de PayPal no corresponde a este pedido.']);
             }
+            $usd = (string) ($pedido['usd_total'] ?? '');
+            if ($usd === '' || (float) $usd <= 0) {
+                responder(400, ['error' => 'Primero inicia el pago desde el botón de PayPal.']);
+            }
             if (!paypal_capturar($enviado, $usd)) {
                 app_log('warning', "pago no confirmado para el pedido $id (orden $enviado)");
                 responder(402, ['error' => 'PayPal no confirmó el pago.']);
             }
             consulta($conn, "UPDATE `orders` SET payment_status = 'completed' WHERE id = ? AND user_id = ?", 'ii', [$id, $user_id]);
             unset($_SESSION['paypal_orden'][$id]);
+            correo_pedido_diferido($conn, $id, 'pagado');
             app_log('info', "pedido $id pagado con PayPal (orden $enviado, USD $usd)");
             responder(200, ['ok' => true]);
 

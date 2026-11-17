@@ -29,10 +29,10 @@ function paypal_configurado(): bool
     return $c['client_id'] !== '' && $c['secret'] !== '';
 }
 
-/** Convierte el total del pedido (en pesos) a dólares con 2 decimales, mínimo 0.01. */
-function total_en_usd(int $total_en_pesos): string
+/** Convierte el total del pedido (en pesos) a dólares con 2 decimales, mínimo 0.01, con la tasa indicada. */
+function total_en_usd(int $total_en_pesos, float $tasa): string
 {
-    $usd = $total_en_pesos / paypal_config()['cop_por_usd'];
+    $usd = $total_en_pesos / max(1.0, $tasa);
     return number_format(max(0.01, round($usd, 2)), 2, '.', '');
 }
 

@@ -7,21 +7,16 @@ if ($aviso = procesar_agregar_al_carrito($conn, $user_id)) {
    $message[] = $aviso;
 }
 
-if (isset($_GET['delete'])) {
+if (isset($_POST['quitar'])) {
    // Solo se puede quitar un producto del propio carrito.
-   consulta($conn, 'DELETE FROM `cart` WHERE id = ? AND user_id = ?', 'ii', [(int) $_GET['delete'], $user_id]);
-   redirigir('carrito.php');
-}
-
-if (isset($_GET['delete_all'])) {
-   consulta($conn, 'DELETE FROM `cart` WHERE user_id = ?', 'i', [$user_id]);
+   consulta($conn, 'DELETE FROM `cart` WHERE id = ? AND user_id = ?', 'ii', [(int) $_POST['quitar'], $user_id]);
    redirigir('carrito.php');
 }
 
 if (isset($_POST['update_cart'])) {
    $fila = consulta($conn,
       'SELECT COALESCE(p.stock, 0) AS stock
-       FROM `cart` c LEFT JOIN `products` p ON p.name = c.name
+       FROM `cart` c LEFT JOIN `products` p ON p.id = c.product_id
        WHERE c.id = ? AND c.user_id = ?',
       'ii', [(int) $_POST['cart_id'], $user_id])[0] ?? null;
 
@@ -64,6 +59,7 @@ render_encabezado('Carrito de compras', 'Carrito');
                <div class="name"><?= e($item['name']) ?></div>
                <div class="price"><?= precio($item['price']) ?> c/u</div>
                <form action="" method="post">
+                  <?= csrf_campo() ?>
                   <input type="hidden" name="cart_id" value="<?= (int) $item['id'] ?>">
                   <input type="number" min="1" max="<?= max((int) $item['stock'], 1) ?>" name="cart_quantity" value="<?= (int) $item['quantity'] ?>" aria-label="Cantidad">
                   <input type="submit" name="update_cart" value="Actualizar" class="boton-opcion">
@@ -73,7 +69,7 @@ render_encabezado('Carrito de compras', 'Carrito');
                <?php endif; ?>
             </div>
             <div class="sub-total">Subtotal <span><?= precio($item['quantity'] * $item['price']) ?></span></div>
-            <a href="carrito.php?delete=<?= (int) $item['id'] ?>" class="fas fa-times" aria-label="Quitar" onclick="return confirm('¿Eliminar esto del carrito?');"></a>
+            <?= form_borrar('quitar', (int) $item['id'], '', '¿Quitar este producto del carrito?', 'fas fa-times quitar') ?>
          </div>
          <?php endforeach; ?>
       </div>
