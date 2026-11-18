@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#102c37">
+  <title>Infografía - Tienda virtual en la nube</title>
+  <link rel="stylesheet" href="infografia.css">
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+  <nav class="chapter-nav" aria-label="Secciones de la infografía">
+    <a href="#inicio" aria-label="Inicio">01</a>
+    <a href="#diagnostico" aria-label="Diagnóstico">02</a>
+    <a href="#arquitectura" aria-label="Arquitectura">03</a>
+    <a href="#datos" aria-label="Datos">04</a>
+    <a href="#despliegue" aria-label="Despliegue">05</a>
+  </nav>
+  <main class="poster">
+    <header class="hero" id="inicio">
+      <div class="hero-copy">
+        <span class="tag">OPTATIVA IV · CLOUD COMPUTING</span>
+        <div class="kicker">La evolución de una tienda virtual</div>
+        <h1>De monolito PHP a contenedores en la nube</h1>
+        <p>Replatforming de una tienda virtual de papelería: PHP + MySQL hacia Docker y Railway.</p>
+        <div class="hero-meta">
+          <span><strong>Proyecto final</strong> · Fase 1</span>
+          <span><strong>UCP</strong> · Oct 2026</span>
+          <span><strong>Integrantes:</strong> Juan David Ruiz · Yarlinson Mosquera · Diego Carmona</span>
+        </div>
+      </div>
+      <div class="orbit" aria-hidden="true">
+        <div class="orbit-ring"></div>
+        <div class="planet"><span>☁</span></div>
+        <span class="bubble php">PHP</span>
+        <span class="bubble docker">Docker</span>
+        <span class="bubble mysql">MySQL</span>
+        <span class="bubble railway">Railway</span>
+      </div>
+      <a class="scroll-cue" href="#diagnostico"><span></span> Explora la historia</a>
+    </header>
+
+    <section class="section" id="diagnostico" data-reveal>
+      <div class="section-title">
+        <div class="kicker">Diagnóstico</div>
+        <h2>El monolito tradicional</h2>
+        <p>Tienda propia con catálogo, carrito, pedidos, pagos y panel administrativo.</p>
+      </div>
+      <div class="cards">
+        <article class="card" data-tilt>
+          <h3>Estado acoplado al servidor</h3>
+          <div class="compare">
+            <div><small>ANTES</small><p>Imágenes en <code>uploaded_img</code> y datos en la misma máquina.</p></div>
+            <div><small>RIESGO</small><p>Apagar o reinstalar el servidor puede perder datos e imágenes.</p></div>
+          </div>
+        </article>
+        <article class="card" data-tilt>
+          <h3>Configuración quemada</h3>
+          <div class="compare">
+            <div><small>ANTES</small><p>Credenciales locales dentro de <code>conexion.php</code>.</p></div>
+            <div><small>RIESGO</small><p>No era portable entre entornos.</p></div>
+          </div>
+        </article>
+        <article class="card" data-tilt>
+          <h3>No escala bien</h3>
+          <div class="compare">
+            <div><small>ANTES</small><p>Sesiones PHP en archivos locales.</p></div>
+            <div><small>RIESGO</small><p>Replicar la aplicación puede perder sesiones.</p></div>
+          </div>
+        </article>
+        <article class="card" data-tilt>
+          <h3>Deuda técnica</h3>
+          <div class="compare">
+            <div><small>ANTES</small><p>HTML, lógica y SQL mezclados; secretos en el código.</p></div>
+            <div><small>RIESGO</small><p>Difícil despliegue repetible y mantenimiento.</p></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section architecture-section" id="arquitectura" data-reveal>
+      <div class="section-title">
+        <div class="kicker">Arquitectura objetivo</div>
+        <h2>Una aplicación, dos entornos</h2>
+        <p>Selecciona el despliegue para ver cómo se conectan los componentes.</p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Entorno de despliegue">
+        <button class="tab active" type="button" data-target="compose" aria-pressed="true"><span>🐳</span> Docker Compose</button>
+        <button class="tab" type="button" data-target="railway" aria-pressed="false"><span>☁</span> Railway</button>
+      </div>
+
+      <div class="architecture" id="compose">
+        <div class="node"><strong>Navegador</strong><small>Usuario</small></div>
+        <div class="arrow">→<span>HTTP · 8080</span></div>
+        <div class="node web"><div class="mark">FRONTEND</div><strong>web</strong><small>nginx · HTML, CSS, JS e imágenes</small><div class="foot">Único puerto público</div></div>
+        <div class="arrow">→<span>FastCGI · 9000</span></div>
+        <div class="node app"><div class="mark">BACKEND</div><strong>app</strong><small>PHP-FPM + mysqli</small><div class="foot">Lógica y configuración</div></div>
+        <div class="arrow">→<span>SQL · 3306</span></div>
+        <div class="node db"><div class="mark">DATOS</div><strong>db</strong><small>MySQL 8 + shop_db</small><div class="foot">Sin acceso público</div></div>
+      </div>
+
+      <div class="architecture railway" id="railway" hidden>
+        <div class="node"><strong>Navegador</strong><small>Usuario</small></div>
+        <div class="arrow">→<span>HTTPS</span></div>
+        <div class="node web"><div class="mark">CONTENEDOR</div><strong>nginx + PHP-FPM</strong><small>Imagen propia desplegada desde GitHub</small><div class="foot">Usuario no root</div></div>
+        <div class="arrow">→<span>Red privada</span></div>
+        <div class="node db"><div class="mark">DATOS</div><strong>MySQL</strong><small>Servicio administrado con persistencia</small><div class="foot">Volumen persistente</div></div>
+      </div>
+    </section>
+
+    <section class="section" id="datos" data-reveal>
+      <div class="section-title">
+        <div class="kicker">Gestión de datos y estado</div>
+        <h2>El estado vive fuera del contenedor</h2>
+        <p>Los contenedores pueden reemplazarse sin perder la información importante.</p>
+      </div>
+      <div class="data-table">
+        <div class="data-row"><strong>Imágenes de productos</strong><span>Volumen <code>uploads</code></span><span>Compartido por nginx y app; Railway lo monta en la ruta compartida.</span></div>
+        <div class="data-row"><strong>Base de datos</strong><span>Volumen <code>db_data</code></span><span>MySQL persiste los datos; el esquema inicial carga solo al crear el volumen.</span></div>
+        <div class="data-row"><strong>Credenciales</strong><span><code>.env</code> y variables</span><span>Configuración fuera de Git y fuera del código fuente.</span></div>
+        <div class="data-row"><strong>Contraseñas</strong><span><code>password_hash()</code></span><span>Cambio de MD5 a hashes seguros bcrypt.</span></div>
+        <div class="data-row"><strong>Sesiones</strong><span>Base de datos / Redis</span><span>Mejora prevista para permitir réplicas sin perder el estado.</span></div>
+      </div>
+    </section>
+
+    <section class="section cloud" id="despliegue" data-reveal>
+      <div>
+        <div class="kicker">Justificación del proveedor</div>
+        <h2>Railway: simple y adecuado</h2>
+        <p>Construye imágenes Docker desde GitHub, mantiene volúmenes persistentes y permite variables de entorno por servicio.</p>
+      </div>
+      <div>
+        <div class="reason"><span>01</span><div><strong>Docker nativo</strong><p>Un Dockerfile por tipo de servicio.</p></div></div>
+        <div class="reason"><span>02</span><div><strong>Red privada</strong><p>La aplicación conecta a MySQL sin exponerlo.</p></div></div>
+        <div class="reason"><span>03</span><div><strong>Persistencia</strong><p>Datos e imágenes sobreviven reinicios.</p></div></div>
+        <div class="reason"><span>04</span><div><strong>CI/CD básico</strong><p>Un push puede activar un nuevo despliegue.</p></div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <div class="kicker">Ruta de implementación</div>
+        <h2>Del diseño a la verificación</h2>
+      </div>
+      <div class="steps">
+        <article class="step"><div class="step-num">01</div><h3>Empaquetar</h3><p>Crear imágenes Docker para web y PHP-FPM.</p></article>
+        <article class="step"><div class="step-num">02</div><h3>Conectar</h3><p>Unir nginx, PHP y MySQL por redes privadas.</p></article>
+        <article class="step"><div class="step-num">03</div><h3>Persistir</h3><p>Separar datos e imágenes en volúmenes.</p></article>
+        <article class="step"><div class="step-num">04</div><h3>Desplegar</h3><p>Construir y publicar desde GitHub en Railway.</p></article>
+        <article class="step"><div class="step-num">05</div><h3>Verificar</h3><p>Comprobar salud, aislamiento y persistencia.</p></article>
+      </div>
+    </section>
+
+    <footer class="closing">
+      <p>Una tienda preparada para seguir creciendo</p>
+      <h2>Código portable.<br>Datos persistentes.</h2>
+      <div class="closing-link">
+        <span>Conoce el resultado en línea</span>
+        <a href="https://papeleriaucp.up.railway.app/inicio.php" target="_blank" rel="noopener">
+          Visitar la tienda
+        </a>
+      </div>
+    </footer>
+  </main>
+
+  
+  <script src="infografia.js"></script>
+</body>
+</html>
