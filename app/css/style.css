@@ -589,6 +589,9 @@ img.sin-imagen { visibility: hidden; }
 .pago-total small { font-size: .82rem; color: var(--muted); }
 .vence-pago { margin: 0 0 1rem; padding: .7rem .9rem; background: var(--accent-50); border-radius: var(--r); color: var(--accent-ink); font-size: .85rem; line-height: 1.4; }
 .pedidos .caja .vence-pago { margin: 1rem 0 0; }
+#paypal-button-container { min-height: 56px; }
+#pago-estado { margin-top: 1rem; min-height: 1.4rem; font-size: .92rem; font-weight: 600; color: var(--ink-2); }
+#pago-estado.error { color: var(--danger); }
 .pagar-wompi { width: 100%; padding-block: 1rem; font-size: 1.05rem; }
 .modo-pruebas { margin: 1rem 0 0; }
 .resultado-icono { display: block; margin-bottom: 1rem; font-size: 3rem; }

@@ -66,6 +66,9 @@ Se definen en `.env` (no se sube a Git; el modelo está en `.env.example`). Ning
 |---|---|
 | `DB_NAME`, `DB_USER`, `DB_PASS` | Base y usuario de la aplicación (los usa `app` y los crea `db`) |
 | `MYSQL_ROOT_PASSWORD` | Clave del usuario root de MySQL |
+| `PASARELA` | Pasarela del pago en línea: `paypal` (por defecto, usada en la demo) o `wompi` (pendiente de activar con llaves reales) |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV` | App de PayPal Developer (`sandbox` o `live`); sin ellas el pago en línea queda desactivado |
+| `PAYPAL_COP_PER_USD`, `PAYPAL_TASA_AUTO` | PayPal cobra en dólares: la tasa COP/USD real se consulta y se guarda 6 h (`PAYPAL_TASA_AUTO=0` usa solo la fija de respaldo) |
 | `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET` | Llaves de Wompi (opcionales; sin ellas el pago en línea queda desactivado y el pedido queda pendiente) |
 | `WOMPI_EVENTS_SECRET`, `APP_URL` | Secreto de eventos (valida el webhook) y dirección pública de la tienda (opcionales) |
 | `CSP_MODO` | Política de seguridad de contenido: `enforce` (por defecto), `report` (solo avisa en la consola del navegador) u `off` |
@@ -144,4 +147,4 @@ La tienda también se despliega en Railway con una imagen propia (`docker/railwa
 
 ## Deuda técnica pendiente
 
-Lo que queda abierto de forma consciente: no hay recuperación de contraseña por correo ni verificación del correo al registrarse; los correos de pedido se envían por SMTP simple (sin cola de reintentos); el listado del panel se actualiza por sondeo cada 8 s y no por WebSockets; no hay pruebas automatizadas de PHP (solo `scripts/verificar.ps1` y `evidencias/`). Ya resueltos: consultas con parámetros, pago con Wompi confirmado en el servidor, CSRF, límite de intentos de login, migraciones, copias, auditoría, paginación y pedidos con tabla de ítems.
+Lo que queda abierto de forma consciente: no hay recuperación de contraseña por correo ni verificación del correo al registrarse; los correos de pedido se envían por SMTP simple (sin cola de reintentos); el listado del panel se actualiza por sondeo cada 8 s y no por WebSockets; no hay pruebas automatizadas de PHP (solo `scripts/verificar.ps1` y `evidencias/`). Ya resueltos: consultas con parámetros, pago con PayPal (demo) o Wompi (pendiente) confirmado en el servidor, CSRF, límite de intentos de login, migraciones, copias, auditoría, paginación y pedidos con tabla de ítems.

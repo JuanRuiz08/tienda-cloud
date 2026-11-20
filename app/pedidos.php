@@ -54,7 +54,7 @@ render_encabezado('Mis pedidos', 'Pedidos');
          <div class="total">Total <strong><?= precio($pedido['total_price']) ?></strong></div>
          <?php if ($pedido['payment_status'] === 'pending' && $pedido['method'] === 'tarjeta'): ?>
          <p class="vence-pago"><i class="fas fa-hourglass-half"></i> Paga en los próximos <?= max(1, (int) ceil($pedido['segundos_para_pagar'] / 60)) ?> min o el pedido se cancela solo.</p>
-         <a href="pago-wompi.php?pedido=<?= (int) $pedido['id'] ?>" class="boton pagar-ahora">Pagar ahora</a>
+         <a href="<?= e(url_pago_pedido((int) $pedido['id'])) ?>" class="boton pagar-ahora">Pagar ahora</a>
          <?php endif; ?>
       </article>
       <?php endforeach; ?>

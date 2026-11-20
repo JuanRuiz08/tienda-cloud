@@ -221,6 +221,18 @@ function cancelar_pedido(mysqli $conn, int $pedido_id): string
         : "El pedido #$pedido_id ya no estaba pendiente; no se cambió nada.";
 }
 
+/** Pasarela de pago en línea activa: "paypal" (por defecto, demo) o "wompi" (PASARELA=wompi). */
+function pasarela_pago(): string
+{
+    return strtolower((string) getenv('PASARELA')) === 'wompi' ? 'wompi' : 'paypal';
+}
+
+/** Página donde el cliente paga un pedido en línea, según la pasarela activa. */
+function url_pago_pedido(int $pedido_id): string
+{
+    return "pago-" . pasarela_pago() . ".php?pedido=$pedido_id";
+}
+
 /** Minutos que tiene el cliente para pagar un pedido en línea antes de que se cancele solo (PEDIDO_EXPIRA_MIN). */
 function minutos_para_pagar(): int
 {

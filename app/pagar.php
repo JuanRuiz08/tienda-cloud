@@ -25,8 +25,8 @@ if (isset($_POST['order_btn']) && $total > 0) {
       $message[] = $aviso;   // no alcanzó el stock: no se creó nada
    } else {
       correo_pedido_diferido($conn, $pedido_id, 'creado');
-      // Pago en línea: se paga ahora con Wompi. Efectivo: queda pendiente y se paga al recibir el pedido.
-      redirigir($metodo === 'tarjeta' ? "pago-wompi.php?pedido=$pedido_id" : "pedidos.php?nuevo=$pedido_id");
+      // Pago en línea: se paga ahora con la pasarela activa (PayPal o Wompi). Efectivo: queda pendiente y se paga al recibir el pedido.
+      redirigir($metodo === 'tarjeta' ? url_pago_pedido($pedido_id) : "pedidos.php?nuevo=$pedido_id");
    }
 }
 render_head('Verificación de compra');
@@ -70,7 +70,7 @@ render_encabezado('Verificación', 'Verificación');
             <span>Método de Pago:</span>
             <select name="method" required>
                <option value="efectivo">Efectivo</option>
-               <option value="tarjeta">Pago en línea (tarjeta, PSE, Nequi)</option>
+               <option value="tarjeta"><?= pasarela_pago() === 'wompi' ? 'Pago en línea (tarjeta, PSE, Nequi)' : 'Tarjeta (PayPal)' ?></option>
             </select>
          </div>
          <div class="inputBox">

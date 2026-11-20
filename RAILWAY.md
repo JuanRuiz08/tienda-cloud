@@ -65,7 +65,20 @@ railway domain update <ID_DEL_DOMINIO> --domain papeleriaucp --service tienda
 
 Sin las variables de Wompi la tienda funciona: el pago en línea muestra "no disponible", el pedido queda pendiente y se puede pagar en efectivo.
 
-## Pago en línea con Wompi
+## Pago con PayPal (activo en la demo)
+
+La variable `PASARELA` elige la pasarela: `paypal` (por defecto) o `wompi`. Para la demo se usa PayPal Sandbox:
+
+```bash
+railway variable set PAYPAL_CLIENT_ID=... PAYPAL_ENV=sandbox --service tienda
+railway variable set PAYPAL_CLIENT_SECRET=... --service tienda
+```
+
+Para probar, inicia sesión en la ventana de PayPal con una cuenta *Personal* de Sandbox (developer.paypal.com → *Testing Tools → Sandbox Accounts*). PayPal cobra en dólares: el total se convierte con la tasa real COP/USD (se guarda 6 h) y el monto en USD se **congela** en el pedido (`orders.usd_total`) al crear la orden; al capturar se exige exactamente ese monto. El pedido se paga en 30 minutos o se cancela solo.
+
+## Pago en línea con Wompi (pendiente de activar)
+
+La integración está lista pero **no está activa**: falta crear la cuenta de comercio y cargar las llaves. Para activarla, además de las variables de abajo, pon `PASARELA=wompi`.
 
 Wompi (Bancolombia) cobra en pesos con tarjetas, PSE, Nequi y más.
 
